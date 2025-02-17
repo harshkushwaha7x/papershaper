@@ -31,7 +31,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
   };
 
   const filteredOptions = options.filter((option) =>
-    option.toLowerCase().includes(searchText.toLowerCase())
+    option.toLowerCase().includes(searchText.toLowerCase()),
   );
 
   return (

@@ -1,11 +1,6 @@
 {
   "Class 10th": {
-    "subjects": [
-      "Science",
-      "Sst",
-      "Maths",
-      "English-First Flight"
-    ],
+    "subjects": ["Science", "Sst", "Maths", "English-First Flight"],
     "chapters": {
       "Science": [
         "chapter-1 Chemical Reactions",

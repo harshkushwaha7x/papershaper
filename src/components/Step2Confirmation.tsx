@@ -42,9 +42,9 @@ const Step2Confirmation: React.FC<Step3Props> = ({
     const cleanString = (str: string) =>
       str.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
     return `MockPaper_${cleanString(formData.board)}_${cleanString(
-      formData.classLevel
+      formData.classLevel,
     )}_${cleanString(formData.selectedSubjects)}_${cleanString(
-      formData.chapter
+      formData.chapter,
     )}.pdf`;
   };
 

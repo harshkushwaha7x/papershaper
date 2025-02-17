@@ -12,5 +12,5 @@ export default {
       },
     },
   },
-  plugins: [motionPlugin, require('@tailwindcss/aspect-ratio'),],
+  plugins: [motionPlugin, require("@tailwindcss/aspect-ratio")],
 };

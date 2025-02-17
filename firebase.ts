@@ -15,7 +15,7 @@ const firebaseConfig = {
   projectId: "papershapers-72950",
   storageBucket: "papershapers-72950.firebasestorage.app",
   messagingSenderId: "409486195769",
-  appId: "1:409486195769:web:2a7abdb827ef1da2b2a1e8"
+  appId: "1:409486195769:web:2a7abdb827ef1da2b2a1e8",
 };
 
 // Initialize Firebase

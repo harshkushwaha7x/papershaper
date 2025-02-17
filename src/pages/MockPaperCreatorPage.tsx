@@ -171,7 +171,7 @@ const MultiStepForm: React.FC = () => {
           "© 2025 Papershapers. All rights reserved.",
           pageWidth / 2,
           pageHeight - 10,
-          { align: "center" }
+          { align: "center" },
         );
       }
 

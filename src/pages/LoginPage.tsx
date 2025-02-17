@@ -33,7 +33,7 @@ const LoginPage = () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(
-        error.message || "Login failed. Please check your credentials."
+        error.message || "Login failed. Please check your credentials.",
       );
     }
   };

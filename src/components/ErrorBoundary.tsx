@@ -1,5 +1,9 @@
 import { Component, ErrorInfo, ReactNode } from "react";
-import { ExclamationTriangleIcon, ArrowPathIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import {
+  ExclamationTriangleIcon,
+  ArrowPathIcon,
+  DocumentTextIcon,
+} from "@heroicons/react/24/outline";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -19,7 +23,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       hasError: false,
       error: null,
       errorInfo: null,
-      showDetails: false
+      showDetails: false,
     };
   }
 
@@ -28,7 +32,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       hasError: true,
       error: error,
       errorInfo: null,
-      showDetails: false
+      showDetails: false,
     };
   }
 
@@ -42,7 +46,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   };
 
   toggleDetails = () => {
-    this.setState(prev => ({ showDetails: !prev.showDetails }));
+    this.setState((prev) => ({ showDetails: !prev.showDetails }));
   };
 
   render() {
@@ -60,7 +64,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                   Oops! Something Went Wrong
                 </h1>
                 <p className="text-gray-600 md:text-lg">
-                  We're sorry for the inconvenience. Let's get you back on track.
+                  We're sorry for the inconvenience. Let's get you back on
+                  track.
                 </p>
                 <div className="p-3 bg-green-50 rounded-lg mt-4">
                   <p className="text-sm text-red-700 font-medium">
@@ -95,7 +100,11 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                     onClick={this.toggleDetails}
                     className="text-green-600 hover:text-green-700 text-sm font-medium flex items-center gap-2 mx-auto"
                   >
-                    <span>{this.state.showDetails ? 'Hide Technical Details' : 'Show Technical Details'}</span>
+                    <span>
+                      {this.state.showDetails
+                        ? "Hide Technical Details"
+                        : "Show Technical Details"}
+                    </span>
                   </button>
 
                   {this.state.showDetails && (

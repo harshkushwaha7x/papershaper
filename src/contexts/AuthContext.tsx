@@ -25,7 +25,7 @@ export interface AuthContextProps {
   login: (email: string, password: string) => Promise<boolean>;
   signup: (
     email: string,
-    password: string
+    password: string,
   ) => Promise<{ success: boolean; message?: string; error?: unknown }>;
   logout: () => void;
   resetPassword: (email: string) => Promise<boolean>;
@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
       );
       if (!userCredential.user.emailVerified) {
         throw new Error("Please verify your email before logging in");
@@ -167,7 +167,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         sendVerificationEmail,
         logout,
         resetPassword,
-        signInWithGoogle
+        signInWithGoogle,
       }}
     >
       {children}

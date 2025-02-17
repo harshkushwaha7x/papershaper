@@ -39,7 +39,7 @@ const SignupPage = () => {
       } else {
         throw new Error(result.error as string);
       }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.message || "Failed to create account");
     }
@@ -49,7 +49,7 @@ const SignupPage = () => {
     try {
       await sendVerificationEmail();
       toast.success("Verification email resent!");
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error("Failed to resend verification email");
     }
@@ -94,8 +94,8 @@ const SignupPage = () => {
         {emailSent ? (
           <div className="w-full max-w-md space-y-6 text-center">
             <p className="text-gray-600 mb-6">
-              We've sent a verification link to your email address. 
-              Please check your inbox and click the link to verify your account.
+              We've sent a verification link to your email address. Please check
+              your inbox and click the link to verify your account.
             </p>
             <button
               onClick={handleResendEmail}
@@ -111,7 +111,10 @@ const SignupPage = () => {
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="w-full max-w-md space-y-4 lg:space-y-5">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="w-full max-w-md space-y-4 lg:space-y-5"
+          >
             <div>
               <input
                 type="text"
@@ -120,7 +123,9 @@ const SignupPage = () => {
                 className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:border-green-500 text-sm lg:text-base"
               />
               {errors.name && (
-                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.name.message}
+                </p>
               )}
             </div>
             <div>

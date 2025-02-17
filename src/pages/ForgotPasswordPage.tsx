@@ -54,7 +54,8 @@ const ForgotPasswordPage = () => {
               Reset Your Password
             </h1>
             <p className="text-base lg:text-lg mb-4 lg:mb-6">
-              Enter your email address and we'll send you instructions to reset your password.
+              Enter your email address and we'll send you instructions to reset
+              your password.
             </p>
           </div>
         </div>
@@ -79,13 +80,17 @@ const ForgotPasswordPage = () => {
                 Email Sent Successfully!
               </h3>
               <p className="text-gray-600">
-                Check your inbox for password reset instructions. If you don't see it, check your spam folder.
+                Check your inbox for password reset instructions. If you don't
+                see it, check your spam folder.
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Email Address
                 </label>
                 <input
@@ -102,7 +107,9 @@ const ForgotPasswordPage = () => {
                   className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 />
                 {errors.email && (
-                  <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 

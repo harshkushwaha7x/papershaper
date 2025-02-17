@@ -1,5 +1,5 @@
 // vite.config.ts
-import { defineConfig } from "vite"; 
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import viteImagemin from "vite-plugin-imagemin";
 import tsconfigPaths from "vite-tsconfig-paths";
@@ -8,7 +8,7 @@ import path from "path";
 
 // Read package.json
 const packageJson = JSON.parse(
-  readFileSync(path.resolve(__dirname, "package.json"), "utf-8")
+  readFileSync(path.resolve(__dirname, "package.json"), "utf-8"),
 );
 
 export default defineConfig(() => {

@@ -175,8 +175,9 @@ const LandingPage = () => {
             Completely Free for Educational Use
           </h2>
           <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8">
-            We believe in accessible education for all. Our platform is completely
-            free for students, teachers, and educational institutions.
+            We believe in accessible education for all. Our platform is
+            completely free for students, teachers, and educational
+            institutions.
           </p>
 
           <div className="bg-green-50 rounded-2xl p-6 sm:p-8 md:p-12 shadow-lg border border-green-100">
@@ -244,12 +245,11 @@ const LandingPage = () => {
           </div>
 
           <p className="mt-8 text-xs sm:text-sm text-gray-500">
-            For schools and institutions needing customized solutions, contact our
-            education team.
+            For schools and institutions needing customized solutions, contact
+            our education team.
           </p>
         </div>
       </section>
-
 
       {/* Integration Section */}
       <section className="py-12 md:py-16 bg-gray-50 text-center">

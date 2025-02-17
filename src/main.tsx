@@ -12,5 +12,5 @@ createRoot(document.getElementById("root")!).render(
         <App />
       </ErrorBoundary>
     </AuthProvider>
-  </StrictMode>
+  </StrictMode>,
 );

@@ -22,7 +22,7 @@ const Step1GeneralDetails: React.FC<Step1Props> = ({
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData((prevData: FormDataType) => ({
@@ -83,7 +83,7 @@ const Step1GeneralDetails: React.FC<Step1Props> = ({
       console.error("Error submitting form data:", error);
       toast.error(
         error.response?.data?.message ||
-          "An unexpected error occurred. Please try again later."
+          "An unexpected error occurred. Please try again later.",
       );
     } finally {
       setIsLoading(false);
