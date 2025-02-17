@@ -34,7 +34,7 @@ export default defineConfig(() => {
       port: 1234,
     },
     build: {
-      minify: false,
+      // minify: false,
       sourcemap: false,
     },
     optimizeDeps: {
