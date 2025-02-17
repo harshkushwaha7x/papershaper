@@ -37,7 +37,10 @@
     "react-hook-form": "^7.53.1",
     "react-router": "^7.1.1",
     "react-router-dom": "^7.1.1",
-    "react-toastify": "^10.0.6"
+    "react-toastify": "^10.0.6",
+    "rollup-plugin-visualizer": "^5.14.0",
+    "vite-plugin-compression": "^0.5.1",
+    "webpack-bundle-analyzer": "^4.10.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

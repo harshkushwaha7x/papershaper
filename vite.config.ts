@@ -5,6 +5,8 @@ import viteImagemin from "vite-plugin-imagemin";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { readFileSync } from "fs";
 import path from "path";
+import { visualizer } from "rollup-plugin-visualizer";
+import viteCompression from "vite-plugin-compression";
 
 // Read package.json
 const packageJson = JSON.parse(
@@ -21,6 +23,8 @@ export default defineConfig(() => {
         optipng: { optimizationLevel: 3 },
         mozjpeg: { quality: 85 },
       }),
+      visualizer({ open: true }),
+      viteCompression(),
     ],
     define: {
       __APP_VERSION__: JSON.stringify(packageJson.version),
