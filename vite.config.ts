@@ -12,9 +12,6 @@ const packageJson = JSON.parse(
 );
 
 export default defineConfig(() => {
-  // Load environment variables based on mode
-  // const env = loadEnv(mode, process.cwd(), "");
-
   return {
     plugins: [
       react(),
@@ -29,14 +26,6 @@ export default defineConfig(() => {
       __APP_VERSION__: JSON.stringify(packageJson.version),
     },
     server: {
-      // proxy: {
-      //   // Proxy configuration
-      //   "/api/answer-key": {
-      //     target: env.VITE_ANSWER_API_BASE_URL,
-      //     changeOrigin: true,
-      //     rewrite: (path) => path.replace(/^\/api\/answer-key/, ""),
-      //   },
-      // },
       hmr: {
         protocol: "ws",
         port: 1234,
@@ -45,6 +34,7 @@ export default defineConfig(() => {
       port: 1234,
     },
     build: {
+      minify: false,
       sourcemap: false,
     },
     optimizeDeps: {
