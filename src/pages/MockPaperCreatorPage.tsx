@@ -206,7 +206,7 @@ const MultiStepForm: React.FC = () => {
         </div>
 
         <StepIndicator currentStep={step} />
-        <div className="max-w-3xl w-full p-4 bg-white rounded-2xl shadow-lg">
+        <div className="max-w-3xl w-full p-8 bg-white rounded-2xl shadow-lg">
           {step === 1 && (
             <Step1Details
               formData={formData}

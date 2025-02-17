@@ -174,28 +174,26 @@ const LandingPage = () => {
           <h2 className="text-3xl md:text-4xl font-semibold mb-6">
             Completely Free for Educational Use
           </h2>
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-8">
+          <p className="text-lg md:text-xl text-gray-600 mb-8">
             We believe in accessible education for all. Our platform is
             completely free for students, teachers, and educational
             institutions.
           </p>
 
-          <div className="bg-green-50 rounded-2xl p-6 sm:p-8 md:p-12 shadow-lg border border-green-100">
+          <div className="bg-green-50 rounded-2xl p-8 md:p-12 shadow-lg border border-green-100">
             <div className="mb-6">
-              <span className="bg-green-700 text-white px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-medium">
+              <span className="bg-green-700 text-white px-4 py-1 rounded-full text-sm font-medium">
                 Free Forever
               </span>
             </div>
-            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-gray-800">
+            <h3 className="text-4xl font-bold mb-4 text-gray-800">
               Full Access for Everyone
             </h3>
-            <p className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 text-green-700">
-              $0
-            </p>
-            <ul className="text-gray-600 space-y-3 mb-8 text-sm sm:text-base max-w-sm mx-auto text-left">
+            <p className="text-5xl font-bold mb-6 text-green-700">$0</p>
+            <ul className="text-gray-600 space-y-3 mb-8 text-lg max-w-sm mx-auto text-left">
               <li className="flex items-center">
                 <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2"
+                  className="w-5 h-5 text-green-500 mr-2"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -209,7 +207,7 @@ const LandingPage = () => {
               </li>
               <li className="flex items-center">
                 <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2"
+                  className="w-5 h-5 text-green-500 mr-2"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -223,7 +221,7 @@ const LandingPage = () => {
               </li>
               <li className="flex items-center">
                 <svg
-                  className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 mr-2"
+                  className="w-5 h-5 text-green-500 mr-2"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
@@ -238,13 +236,13 @@ const LandingPage = () => {
             </ul>
             <Link
               to="/register"
-              className="inline-block px-6 py-3 bg-green-700 text-white rounded-full hover:bg-green-800 transition-colors duration-300 shadow-md text-base sm:text-lg"
+              className="inline-block px-8 py-3 bg-green-700 text-white rounded-full hover:bg-green-800 transition-colors duration-300 shadow-md text-lg"
             >
               Get Started Free
             </Link>
           </div>
 
-          <p className="mt-8 text-xs sm:text-sm text-gray-500">
+          <p className="mt-8 text-sm text-gray-500">
             For schools and institutions needing customized solutions, contact
             our education team.
           </p>

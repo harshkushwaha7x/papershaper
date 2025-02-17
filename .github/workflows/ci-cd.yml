@@ -19,7 +19,8 @@ jobs:
           cache: "npm" # Cache dependencies
 
       - name: Install Dependencies
-        run: npm install --force --verbose
+        run: |
+          npm ci # Ensures package-lock consistency
 
       - name: Build Project
         run: npm run build

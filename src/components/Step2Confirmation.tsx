@@ -58,10 +58,8 @@ const Step2Confirmation: React.FC<Step3Props> = ({
   };
 
   return (
-    <div className="px-4 md:px-8 pb-10 min-h-auto flex flex-col items-center justify-center">
-      <h2
-        className={`text-3xl sm:text-4xl md:text-5xl font-bold text-green-600/90 py-4 ${pdfUrl ? "mb-8" : "mb-0"}`}
-      >
+    <div className="px-4 md:px-8 min-h-screen flex flex-col items-center justify-center">
+      <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-8 bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-blue-600 py-4">
         {pdfUrl && "Your Mock Paper is Ready!"}
       </h2>
 
