@@ -1,4 +1,4 @@
-// vite.config.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import viteImagemin from "vite-plugin-imagemin";
@@ -8,7 +8,7 @@ import path from "path";
 
 // Read package.json
 const packageJson = JSON.parse(
-  readFileSync(path.resolve(__dirname, "package.json"), "utf-8"),
+  readFileSync(path.resolve(__dirname, "package.json"), "utf-8")
 );
 
 export default defineConfig(() => {
@@ -27,18 +27,37 @@ export default defineConfig(() => {
     },
     server: {
       hmr: {
-        protocol: "ws",
-        port: 1234,
+        port: 1234, // Removed "protocol: ws" to avoid conflicts
       },
       host: "localhost",
       port: 1234,
     },
     build: {
-      // minify: false,
       sourcemap: false,
+      chunkSizeWarningLimit: 1024,
+      minify: "terser",
+      terserOptions: {
+        compress: {
+          drop_console: true, // Remove console logs in production
+        },
+      },
+      rollupOptions: {
+        // Properly handle eval warnings
+        onwarn(warning, warn) {
+          if (warning.code === "EVAL") return;
+          warn(warning);
+        },
+        output: {
+          // Optimize chunking by grouping common dependencies
+          manualChunks: {
+            vendor: ["react", "react-dom", "react-router-dom"],
+            utils: ["lodash", "date-fns"],
+          },
+        },
+      },
     },
     optimizeDeps: {
-      include: ["react-router", "react-router-dom", "tailwindcss-motion"],
+      include: ["react-router-dom"],
     },
   };
 });
