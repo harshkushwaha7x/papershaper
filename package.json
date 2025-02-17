@@ -7,7 +7,7 @@
     "dev": "vite",
     "preview": "vite preview",
     "dev:host": "vite --host --port 1234",
-    "build": "tsc -b && build",
+    "build": "tsc -b && vite build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
