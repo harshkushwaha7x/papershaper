@@ -51,7 +51,7 @@ export default defineConfig(() => {
           // Optimize chunking by grouping common dependencies
           manualChunks: {
             vendor: ["react", "react-dom", "react-router-dom"],
-            utils: ["lodash", "date-fns"],
+            utils: ["lodash"],
           },
         },
       },
