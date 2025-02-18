@@ -31,7 +31,7 @@ export default defineConfig(() => {
     },
     server: {
       hmr: {
-        port: 1234, // Removed "protocol: ws" to avoid conflicts
+        port: 1234,
       },
       host: "localhost",
       port: 1234,
