@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { jsPDF } from "jspdf";
 import { getAnswerKey } from "../services/api/getAnswerKey";
 import { FormDataType } from "pages/MockPaperCreatorPage";
-import { Player } from "@lottiefiles/react-lottie-player";
 
 interface StepAnswerKeyProps {
   formData: FormDataType;
@@ -110,12 +109,7 @@ const StepAnswerKey: React.FC<StepAnswerKeyProps> = ({
       <div className="w-full max-w-3xl p-6 bg-white rounded-xl shadow-lg">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-96">
-            <Player
-              autoplay
-              loop
-              src="../assets/lottie/loadingRobot.json"
-              style={{ height: "200px", width: "200px" }}
-            />
+            <div className="text-green-600">Load</div>
             <p className="text-green-700 mt-4">Generating answer key...</p>
           </div>
         ) : pdfUrl ? (

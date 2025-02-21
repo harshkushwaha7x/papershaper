@@ -1,7 +1,5 @@
-import { Player } from "@lottiefiles/react-lottie-player";
 import { FormDataType } from "pages/MockPaperCreatorPage";
 import { useEffect, useState } from "react";
-import loadingAnimation from "../../src/assets/lottie/loading.json";
 
 interface Step3Props {
   formData: FormDataType;
@@ -67,12 +65,7 @@ const Step2Confirmation: React.FC<Step3Props> = ({
 
       {loading ? (
         <div className="py-12">
-          <Player
-            src={loadingAnimation}
-            className="w-72 h-72 mx-auto"
-            autoplay
-            loop
-          />
+          Loading...
           <div className="mt-6 text-lg text-gray-600 text-center">
             <p className="animate-pulse">{loadingMessages[messageIndex]}</p>
             <p className="text-sm mt-2">This usually takes 15-20 seconds</p>
