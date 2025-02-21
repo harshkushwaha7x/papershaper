@@ -1,6 +1,6 @@
 import { Player } from "@lottiefiles/react-lottie-player";
 import { Link } from "react-router";
-import notFoundAnimation from "../../public/lottie/404.json";
+import notFoundAnimation from "../../src/assets/lottie/404.json";
 
 const NotFoundPage = () => {
   return (

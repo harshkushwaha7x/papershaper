@@ -1,7 +1,7 @@
 import { Player } from "@lottiefiles/react-lottie-player";
 import { FormDataType } from "pages/MockPaperCreatorPage";
 import { useEffect, useState } from "react";
-import loadingAnimation from "../../public/lottie/loading.json";
+import loadingAnimation from "../../src/assets/lottie/loading.json";
 
 interface Step3Props {
   formData: FormDataType;

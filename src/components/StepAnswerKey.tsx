@@ -113,7 +113,7 @@ const StepAnswerKey: React.FC<StepAnswerKeyProps> = ({
             <Player
               autoplay
               loop
-              src="/lottie/loadingRobot.json"
+              src="../assets/lottie/loadingRobot.json"
               style={{ height: "200px", width: "200px" }}
             />
             <p className="text-green-700 mt-4">Generating answer key...</p>
