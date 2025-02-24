@@ -64,11 +64,40 @@ const Step2Confirmation: React.FC<Step3Props> = ({
       </h2>
 
       {loading ? (
-        <div className="py-12">
-          Loading...
-          <div className="mt-6 text-lg text-gray-600 text-center">
-            <p className="animate-pulse">{loadingMessages[messageIndex]}</p>
-            <p className="text-sm mt-2">This usually takes 15-20 seconds</p>
+        <div className="py-12 flex flex-col items-center justify-center bg-white">
+          <div className="relative">
+            <svg
+              className="animate-spin h-16 w-16 text-green-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+              ></path>
+            </svg>
+          </div>
+          <div
+            className="mt-6 text-lg text-green-500 text-center font-semibold"
+            aria-live="polite"
+          >
+            <p className="animate-pulse mt-2">
+              {loadingMessages[messageIndex]}
+            </p>
+            <p className="text-sm mt-2 text-gray-600">
+              This usually takes 15-20 seconds
+            </p>
           </div>
         </div>
       ) : (

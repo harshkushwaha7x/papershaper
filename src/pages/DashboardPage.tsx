@@ -1,3 +1,4 @@
+import { CloudArrowUpIcon, MagnifyingGlassIcon, SparklesIcon } from "@heroicons/react/24/solid";
 import Footer from "components/Footer";
 import Header from "components/Header";
 import SeoStructure from "components/SeoStructureData";
@@ -76,7 +77,7 @@ const DashboardPage = () => {
       <section className="py-16 bg-gradient-to-br from-green-50 to-emerald-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-green-700 to-emerald-700">
-            Smart Exam Preparation Solutions
+            Smart Exam Preparation & Research Solutions
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             {[
@@ -86,49 +87,29 @@ const DashboardPage = () => {
                   "Create customized mock papers and test questions for Classes 9-12 (CBSE). Select your class, subject, and chapter to generate tailored practice materials or assessment questions instantly.",
                 link: "/mock-paper-creator",
                 linkText: "Try Exam Generator",
-                icon: (
-                  <svg
-                    className="w-12 h-12 text-emerald-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                    />
-                    2
-                  </svg>
-                ),
+                icon: <SparklesIcon className="w-10 h-10 text-green-600" />,
               },
               {
                 title: "Document-Based Question Generator",
                 description:
-                  "Upload documents (resumes, study materials, etc.) to receive personalized PDFs with interview questions or chapter tests generated using content analysis and web research integration.",
+                  "Upload documents (resumes, study materials, etc.) to receive personalized text outputs with relevant interview questions or chapter tests generated using content analysis and web research integration.",
                 link: "/document-helper",
                 linkText: "Try Document Helper",
+                icon: <CloudArrowUpIcon className="w-10 h-10 text-green-600" />,
+              },
+              {
+                title: "Web Research Questions Generator",
+                description:
+                  "Input your research query and get a detailed text output compiling curated web sources and research insights, empowering your study and analysis with up-to-date information.",
+                link: "/research-service",
+                linkText: "Try Research Text Generator",
                 icon: (
-                  <svg
-                    className="w-12 h-12 text-emerald-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
+                  <MagnifyingGlassIcon className="w-10 h-10 text-green-600" />
                 ),
               },
             ].map((feature, index) => (
               <div
                 key={index}
-                id="feature"
                 className="bg-white p-8 rounded-2xl shadow-lg flex flex-col"
               >
                 <div className="flex-grow">
@@ -153,7 +134,6 @@ const DashboardPage = () => {
           </div>
         </div>
       </section>
-
       <Footer />
     </>
   );
