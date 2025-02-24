@@ -1,4 +1,9 @@
-import { CloudArrowUpIcon, SparklesIcon } from "@heroicons/react/24/solid";
+// src/pages/ServicesPage.tsx
+import {
+  CloudArrowUpIcon,
+  SparklesIcon,
+  MagnifyingGlassIcon,
+} from "@heroicons/react/24/solid";
 import Footer from "components/Footer";
 import Header from "components/Header";
 import { Link } from "react-router-dom";
@@ -17,9 +22,17 @@ const ServicesPage = () => {
       icon: <CloudArrowUpIcon className="w-10 h-10 text-green-600" />,
       title: "Document-Based Question Generation",
       description:
-        "Upload any document (resumes, study materials, etc.) and receive a comprehensive PDF with relevant interview questions or practice tests generated using content analysis and web research integration.",
+        "Upload any document (resumes, study materials, etc.) and receive a comprehensive text output with relevant interview questions or practice tests generated using content analysis and web research integration.",
       link: "/document-helper",
       linkText: "Try Document Helper",
+    },
+    {
+      icon: <MagnifyingGlassIcon className="w-10 h-10 text-green-600" />,
+      title: "Web Research Test Generator",
+      description:
+        "Enter a research query to generate a detailed text output compiling curated web sources and research insights, empowering your study and analysis with up-to-date information.",
+      link: "/research-service",
+      linkText: "Try Research Test Generator",
     },
   ];
 

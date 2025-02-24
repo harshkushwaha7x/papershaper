@@ -4,7 +4,6 @@ import { toast } from "react-toastify";
 import { jsPDF } from "jspdf";
 import { getAnswerKey } from "../services/api/getAnswerKey";
 import { FormDataType } from "pages/MockPaperCreatorPage";
-import { Player } from "@lottiefiles/react-lottie-player";
 
 interface StepAnswerKeyProps {
   formData: FormDataType;
@@ -25,44 +24,170 @@ const StepAnswerKey: React.FC<StepAnswerKeyProps> = ({
   const apiCalled = useRef(false); // Prevent multiple API calls
 
   const generateAnswerKeyPDF = (text: string) => {
-    const doc = new jsPDF();
+    const doc: any = new jsPDF();
     const margin = 15;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const maxWidth = pageWidth - 2 * margin;
     let yPos = margin;
 
-    // Clean text: remove replacement characters and collapse extra spaces within each line
+    // Define font sizes and spacing
+    const contentFontSize = 12; // Increased font size for answer text
+    const headerFontSize = 16;
+    const lineHeight = 8;
+    const lineSpacing = 2;
+
+    // Helper: Render a header with larger, bold text.
+    const renderHeader = () => {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(headerFontSize);
+      const headerText = "Answer Key";
+      // Center the header on the page
+      doc.text(headerText, pageWidth / 2, margin, { align: "center" });
+      // Adjust yPos below the header
+      yPos = margin + 12;
+      // Reset font settings for content
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(contentFontSize);
+    };
+
+    // Render header on the first page
+    renderHeader();
+
+    // Helper: Parse a line into segments with a "bold" flag based on ** markers.
+    const parseInlineSegments = (line: string) => {
+      const segments: { text: string; bold: boolean }[] = [];
+      const regex = /\*\*(.*?)\*\*/g;
+      let lastIndex = 0;
+      let match;
+      while ((match = regex.exec(line)) !== null) {
+        if (match.index > lastIndex) {
+          segments.push({
+            text: line.substring(lastIndex, match.index),
+            bold: false,
+          });
+        }
+        segments.push({
+          text: match[1],
+          bold: true,
+        });
+        lastIndex = match.index + match[0].length;
+      }
+      if (lastIndex < line.length) {
+        segments.push({ text: line.substring(lastIndex), bold: false });
+      }
+      return segments;
+    };
+
+    // Helper: Process a line with inline formatting and manual word wrapping.
+    const processFormattedLine = (line: string) => {
+      const segments = parseInlineSegments(line);
+      // Break segments into individual word tokens (keeping spaces)
+      const words: { text: string; bold: boolean }[] = [];
+      segments.forEach((segment) => {
+        const tokens = segment.text.split(/(\s+)/);
+        tokens.forEach((token) => {
+          if (token.length > 0) {
+            words.push({ text: token, bold: segment.bold });
+          }
+        });
+      });
+
+      let currentLineWords: { text: string; bold: boolean }[] = [];
+      let currentLineWidth = 0;
+
+      words.forEach((word) => {
+        // Set the font style and size for measurement
+        doc.setFont("helvetica", word.bold ? "bold" : "normal");
+        doc.setFontSize(contentFontSize);
+        const wordWidth = doc.getTextWidth(word.text);
+        // Add a space if needed (only if current line isn’t empty)
+        const additionalWidth =
+          currentLineWords.length > 0 ? doc.getTextWidth(" ") : 0;
+        if (currentLineWidth + additionalWidth + wordWidth > maxWidth) {
+          // Render current line
+          let xPos = margin;
+          currentLineWords.forEach((w) => {
+            doc.setFont("helvetica", w.bold ? "bold" : "normal");
+            doc.setFontSize(contentFontSize);
+            doc.text(w.text, xPos, yPos);
+            xPos += doc.getTextWidth(w.text);
+          });
+          yPos += lineHeight + lineSpacing;
+          if (yPos > pageHeight - margin) {
+            doc.addPage();
+            renderHeader();
+          }
+          currentLineWords = [];
+          currentLineWidth = 0;
+        }
+        if (currentLineWords.length > 0) {
+          currentLineWords.push({ text: " ", bold: false });
+          currentLineWidth += doc.getTextWidth(" ");
+        }
+        currentLineWords.push(word);
+        currentLineWidth += wordWidth;
+      });
+      // Render any remaining words on the current line.
+      if (currentLineWords.length > 0) {
+        let xPos = margin;
+        currentLineWords.forEach((w) => {
+          doc.setFont("helvetica", w.bold ? "bold" : "normal");
+          doc.setFontSize(contentFontSize);
+          doc.text(w.text, xPos, yPos);
+          xPos += doc.getTextWidth(w.text);
+        });
+        yPos += lineHeight + lineSpacing;
+        if (yPos > pageHeight - margin) {
+          doc.addPage();
+          renderHeader();
+        }
+      }
+    };
+
+    // Clean the input text.
     text = text.replace(/\uFFFD/g, "");
     const lines = text.split("\n");
 
     lines.forEach((line) => {
-      // Trim the line and collapse multiple spaces to one
       const cleanedLine = line.trim().replace(/\s{2,}/g, " ");
       if (cleanedLine === "") {
-        yPos += 4; // Add extra spacing for blank lines
+        yPos += lineHeight / 1.5; // extra spacing for blank lines
         return;
       }
-      // if (/^Section\s+[ABC]/i.test(cleanedLine)) {
-      //   doc.setFont("helvetica", "bold");
-      //   doc.setFontSize(11);
-      // } else if (/^\d+\./.test(cleanedLine)) {
-      //   doc.setFont("helvetica", "bold");
-      //   doc.setFontSize(10);
-      // } else {
-      //   doc.setFont("helvetica", "normal");
-      //   doc.setFontSize(10);
-      // }
 
-      // Wrap text to ensure it doesn't get cut off
-      const splitText = doc.splitTextToSize(cleanedLine, maxWidth);
-      if (yPos + splitText.length * 6 > pageHeight - margin) {
-        doc.addPage();
-        yPos = margin;
+      if (cleanedLine.includes("**")) {
+        processFormattedLine(cleanedLine);
+      } else {
+        const splitText = doc.splitTextToSize(cleanedLine, maxWidth);
+        if (
+          yPos + splitText.length * (lineHeight + lineSpacing) >
+          pageHeight - margin
+        ) {
+          doc.addPage();
+          renderHeader();
+        }
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(contentFontSize);
+        doc.text(splitText, margin, yPos);
+        yPos += splitText.length * (lineHeight + lineSpacing);
       }
-      doc.text(splitText, margin, yPos);
-      yPos += splitText.length * 6 + 2;
     });
+
+    // Add page footers with copyright and page numbers.
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      const footerText = "© 2025 Papershapers all rights reserved";
+      doc.text(footerText, margin, pageHeight - 10);
+      const pageText = `Page ${i} of ${pageCount}`;
+      doc.text(pageText, pageWidth - margin, pageHeight - 10, {
+        align: "right",
+        margin: 5,
+      });
+    }
 
     const pdfBlob = doc.output("blob");
     const pdfBlobUrl = URL.createObjectURL(pdfBlob);
@@ -99,6 +224,7 @@ const StepAnswerKey: React.FC<StepAnswerKeyProps> = ({
     };
 
     fetchAnswerKey();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -110,12 +236,29 @@ const StepAnswerKey: React.FC<StepAnswerKeyProps> = ({
       <div className="w-full max-w-3xl p-6 bg-white rounded-xl shadow-lg">
         {loading ? (
           <div className="flex flex-col items-center justify-center h-96">
-            <Player
-              autoplay
-              loop
-              src="../assets/lottie/loadingRobot.json"
-              style={{ height: "200px", width: "200px" }}
-            />
+            <div className="relative">
+              <svg
+                className="animate-spin h-16 w-16 text-green-500"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                ></path>
+              </svg>
+            </div>
             <p className="text-green-700 mt-4">Generating answer key...</p>
           </div>
         ) : pdfUrl ? (
@@ -137,20 +280,22 @@ const StepAnswerKey: React.FC<StepAnswerKeyProps> = ({
           </button>
         )}
         {pdfUrl && (
-          <a
-            href={pdfUrl}
-            download="answer-key.pdf"
-            className="w-full md:w-auto px-8 py-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-colors text-center"
-          >
-            Download PDF
-          </a>
+          <>
+            <a
+              href={pdfUrl}
+              download="answer-key.pdf"
+              className="w-full md:w-auto px-8 py-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-colors text-center"
+            >
+              Download PDF
+            </a>
+            <button
+              onClick={onBack}
+              className="w-full md:w-auto px-8 py-3 bg-white text-green-600 border border-green-600 rounded-lg shadow-md hover:bg-green-50 transition-colors"
+            >
+              Regenerate Document
+            </button>
+          </>
         )}
-        <button
-          onClick={onBack}
-          className="w-full md:w-auto px-8 py-3 bg-white text-green-600 border border-green-600 rounded-lg shadow-md hover:bg-green-50 transition-colors"
-        >
-          Back
-        </button>
       </div>
     </div>
   );

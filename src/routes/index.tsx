@@ -19,6 +19,7 @@ import { useEffect } from "react";
 import PricingPage from "pages/PricingPage";
 import DocumentHelperPage from "pages/DocumentHelperPage";
 import { Helmet } from "react-helmet-async";
+import ResearchServicePage from "components/Service3";
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const user = sessionStorage.getItem("user");
@@ -81,6 +82,14 @@ const AppRoutes: React.FC = () => (
         element={
           <ProtectedRoute>
             <DocumentHelperPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/research-service"
+        element={
+          <ProtectedRoute>
+            <ResearchServicePage />
           </ProtectedRoute>
         }
       />
