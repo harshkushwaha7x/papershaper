@@ -1,41 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
 
-export async function getAnswerKey(formData: {
-  id: string;
-  board: string;
-  classLevel: string;
-  selectedSubjects: string;
-  chapter: string;
-  paperType: string;
-  hit_count: number;
-  is_logedIn: boolean;
-  question_paper: string;
-}) {
+export async function getResearchAnswer(query: string) {
   try {
-    const payload = {
-      id: formData.id,
-      Board: formData.board,
-      Class: formData.classLevel,
-      Subject: formData.selectedSubjects,
-      Chapter: formData.chapter,
-      Prompt_Type: formData.paperType,
-      hit_count: formData.hit_count,
-      is_logedIn: formData.is_logedIn,
-      answer: true,
-      question_paper: formData.question_paper,
-    };
+    const payload = { query };
 
     const apiURL = import.meta.env.VITE_API_BASE_URL;
-
-    const response = await axios.post(`${apiURL}/default`, payload, {
+    // Calling the researcher endpoint as specified by the curl command
+    const response = await axios.post(`${apiURL}/default/researcher`, payload, {
       headers: { "Content-Type": "application/json" },
     });
 
-    if (response.status === 200 && response.data?.result) {
-      return response.data.result;
+    if (response.status === 200 && response.data) {
+      return response.data;
     } else {
-      throw new Error("Invalid response format: Missing 'result' field");
+      throw new Error("Invalid response format: Missing expected data");
     }
   } catch (error: any) {
     let errorResponse: any = {

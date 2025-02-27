@@ -1,7 +1,7 @@
 import { FormDataType } from "pages/MockPaperCreatorPage";
 import { useEffect, useState } from "react";
 
-interface Step3Props {
+interface Step2Props {
   formData: FormDataType;
   pdfUrl: string | null;
   onGenerate: () => void;
@@ -9,7 +9,7 @@ interface Step3Props {
   onNext: () => void;
 }
 
-const Step2Confirmation: React.FC<Step3Props> = ({
+const Step2Confirmation: React.FC<Step2Props> = ({
   formData,
   pdfUrl,
   onGenerate,

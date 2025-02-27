@@ -5,21 +5,18 @@ import classData from "../data/classData.json";
 interface Step2Props {
   formData: FormDataType;
   setFormData: React.Dispatch<React.SetStateAction<FormDataType>>;
-  // onPrevious: () => void;
   onNext: () => void;
 }
 
 const Step1Details: React.FC<Step2Props> = ({
   formData,
   setFormData,
-  // onPrevious,
   onNext,
 }) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [availableSubjects, setAvailableSubjects] = useState<string[]>([]);
   const [availableChapters, setAvailableChapters] = useState<string[]>([]);
 
-  // Update subjects and chapters when classLevel changes
   useEffect(() => {
     if (formData.classLevel && classData[formData.classLevel]) {
       const subjects = classData[formData.classLevel].subjects;
@@ -92,13 +89,11 @@ const Step1Details: React.FC<Step2Props> = ({
       }));
     }
 
-    // Update chapters based on selected subjects
     if (selected.length > 0) {
       const firstSelectedSubject = selected;
       const classLevel = formData.classLevel as keyof typeof classData;
 
-      // Using a type assertion here to specify the expected structure of chapters
-      const chapters =
+     const chapters =
         (classData[classLevel]?.chapters as Record<string, string[]>)[
           firstSelectedSubject
         ] || [];
@@ -170,13 +165,6 @@ const Step1Details: React.FC<Step2Props> = ({
         )}
       </div>
       <div className="flex justify-end mt-8">
-        {/* <button
-          type="button"
-          onClick={onPrevious}
-          className="py-2 px-6 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-        >
-          Previous
-        </button> */}
         <button
           type="submit"
           className="py-2 px-6 bg-green-600 text-white rounded-md hover:bg-green-700"
