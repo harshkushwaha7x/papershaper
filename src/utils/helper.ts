@@ -1,10 +1,12 @@
 import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+import { toast } from "react-toastify";
 
 export const generateAnswerKeyPDF = (text: string): string => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const doc: any = new jsPDF();
   const margin = 15;
-  const footerHeight = 20; 
+  const footerHeight = 20;
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const maxWidth = pageWidth - 2 * margin;
@@ -183,15 +185,119 @@ export const generateAnswerKeyPDF = (text: string): string => {
   return pdfBlobUrl;
 };
 
-// export const markdownToHtml = (markdown: string): string => {
-//   let html = markdown;
-//   // Convert headers
-//   html = html.replace(/^### (.*$)/gm, "<h3>$1</h3>");
-//   html = html.replace(/^## (.*$)/gm, "<h2>$1</h2>");
-//   html = html.replace(/^# (.*$)/gm, "<h1>$1</h1>");
-//   // Convert bold text
-//   html = html.replace(/\*\*(.*?)\*\*/gm, "<strong>$1</strong>");
-//   // Convert newlines to line breaks
-//   html = html.replace(/\n/g, "<br/>");
-//   return html;
-// };
+export const downloadPdf = async (
+  elementId: string,
+  semanticName = "research-report.pdf"
+) => {
+  const input = document.getElementById(elementId);
+  if (!input) {
+    console.error(`Element with id '${elementId}' not found.`);
+    toast.error("PDF download error: Element not found");
+    return;
+  }
+  try {
+    // Capture the full content as a canvas
+    const canvas = await html2canvas(input, {
+      scale: 2,
+      scrollY: -window.scrollY,
+      onclone: (clonedDoc) => {
+        const clonedElement = clonedDoc.getElementById(elementId);
+        if (clonedElement) {
+          clonedElement.style.overflow = "visible";
+          clonedElement.style.maxHeight = "none";
+        }
+      },
+    });
+
+    // Initialize jsPDF for A4 dimensions (points)
+    const pdf = new jsPDF("p", "pt", "a4");
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    // Define header and footer sizes (in points)
+    const headerHeight = 50;
+    const footerHeight = 30;
+    const usablePageHeight = pdfHeight - headerHeight - footerHeight;
+
+    // Calculate scaling factor from canvas pixels to PDF points
+    const scaleFactor = pdfWidth / canvas.width;
+    // Determine the height (in canvas pixels) of one page slice
+    const pageSliceHeight = usablePageHeight / scaleFactor;
+    // Calculate total number of pages required
+    const totalPages = Math.ceil(canvas.height / pageSliceHeight);
+
+    for (let page = 0; page < totalPages; page++) {
+      // Create an offscreen canvas for this page slice
+      const pageCanvas = document.createElement("canvas");
+      pageCanvas.width = canvas.width;
+      // Ensure we don't exceed the remaining canvas height on the last page
+      pageCanvas.height = Math.min(
+        pageSliceHeight,
+        canvas.height - page * pageSliceHeight
+      );
+      const ctx = pageCanvas.getContext("2d");
+      if (ctx) {
+        // Extract the slice of the canvas for this page
+        ctx.drawImage(
+          canvas,
+          0,
+          page * pageSliceHeight,
+          canvas.width,
+          pageCanvas.height,
+          0,
+          0,
+          canvas.width,
+          pageCanvas.height
+        );
+        // Convert the page slice to an image
+        const pageData = pageCanvas.toDataURL("image/png");
+        // Add a new page for pages after the first one
+        if (page > 0) {
+          pdf.addPage();
+        }
+
+        // --- Draw Header ---
+        pdf.setFillColor(34, 197, 94); // Tailwind green-500
+        pdf.rect(0, 0, pdfWidth, headerHeight, "F");
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(18);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text(
+          "Papershapers: Your Personalized Mock Paper",
+          pdfWidth / 2,
+          headerHeight / 2 + 6,
+          { align: "center" }
+        );
+
+        // --- Draw Content ---
+        pdf.setTextColor(0, 0, 0);
+        pdf.addImage(
+          pageData,
+          "PNG",
+          0,
+          headerHeight,
+          pdfWidth,
+          pageCanvas.height * scaleFactor
+        );
+
+        // --- Draw Footer ---
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 100, 100);
+        const pageNumber = page + 1;
+        pdf.text(
+          `© 2025 Papershapers. All rights reserved. | Page ${pageNumber} of ${totalPages}`,
+          pdfWidth / 2,
+          pdfHeight - 10,
+          { align: "center" }
+        );
+      }
+    }
+
+    pdf.save(semanticName);
+    toast.success("PDF saved successfully.");
+  } catch (err) {
+    console.error("Error generating PDF:", err);
+    toast.error("Failed to generate PDF");
+  }
+};

@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Header from "../components/Header";
-import { jsPDF } from "jspdf";
 import Footer from "../components/Footer";
 import { toast } from "react-toastify";
 import { getValue } from "../services/api/getValue";
@@ -9,9 +8,10 @@ import { SparklesIcon } from "@heroicons/react/24/solid";
 import Step2Confirmation from "../components/Step2Confirmation";
 import Step1Details from "../components/Step1Details";
 import Step3AnswerKey from "../components/Step3AnswerKey";
+import { downloadPdf } from "utils/helper";
 
 export interface FormDataType {
-  reason?: string | undefined;
+  reason?: string;
   firstName: string;
   lastName: string;
   gender: string;
@@ -22,7 +22,7 @@ export interface FormDataType {
   selectedSubjects: string;
   chapter: string;
   paperType: string;
-  id?: string | undefined;
+  id?: string;
   phoneNumber?: string;
 }
 
@@ -41,7 +41,8 @@ const MultiStepForm: React.FC = () => {
     chapter: "",
     paperType: "",
   });
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  // Instead of pdfUrl we store the generated markdown content
+  const [markdownContent, setMarkdownContent] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [questions, setQuestions] = useState<string>("");
   const [answerKeyId, setAnswerKeyId] = useState("");
@@ -65,9 +66,8 @@ const MultiStepForm: React.FC = () => {
       paperType: "",
       id: "",
     });
-
     setStep(1);
-    setPdfUrl(null);
+    setMarkdownContent("");
     setLoading(false);
     setQuestions("");
     setAnswerKeyId("");
@@ -76,7 +76,7 @@ const MultiStepForm: React.FC = () => {
   const handleGenerate = async () => {
     try {
       setLoading(true);
-      // Generate a random ID using Math.random and convert it to a base-36 string
+      // Generate a random ID for the answer key
       const randomId = Math.random().toString(36).substr(2, 9);
       setAnswerKeyId(randomId);
       const payload = {
@@ -95,96 +95,27 @@ const MultiStepForm: React.FC = () => {
 
       const content = res.result ?? "";
       setQuestions(content);
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const doc: any = new jsPDF();
-      const pageWidth = doc.internal.pageSize.width;
-      const pageHeight = doc.internal.pageSize.height;
-      const marginLeft = 20;
-      const marginTop = 30;
-      const lineHeight = 10;
-      const maxWidth = pageWidth - 2 * marginLeft;
-      let cursorY = marginTop;
-
-      doc.setFontSize(20);
-      doc.setFont("helvetica", "bold");
-      doc.text("Sample Mock Paper", pageWidth / 2, cursorY, {
-        align: "center",
-      });
-      cursorY += lineHeight * 2;
-
-      const processTextWithBold = (text: string) => {
-        const regex = /\*\*(.*?)\*\*/g;
-        let lastIndex = 0;
-        const formattedText = [];
-        let match;
-        while ((match = regex.exec(text)) !== null) {
-          if (match.index > lastIndex) {
-            formattedText.push({
-              text: text.substring(lastIndex, match.index),
-              isBold: false,
-            });
-          }
-          formattedText.push({ text: match[1], isBold: true });
-          lastIndex = regex.lastIndex;
-        }
-        if (lastIndex < text.length) {
-          formattedText.push({
-            text: text.substring(lastIndex),
-            isBold: false,
-          });
-        }
-        return formattedText;
-      };
-
-      doc.setFontSize(12);
-      const paragraphs = content.split("\n");
-      paragraphs.forEach((para: string) => {
-        if (para.trim() === "") {
-          cursorY += lineHeight;
-          return;
-        }
-        const wrappedLines = doc.splitTextToSize(para, maxWidth);
-        wrappedLines.forEach((line: string) => {
-          const formattedText = processTextWithBold(line);
-          let lineX = marginLeft;
-          formattedText.forEach((part) => {
-            doc.setFont("helvetica", part.isBold ? "bold" : "normal");
-            doc.text(part.text, lineX, cursorY);
-            lineX += doc.getTextWidth(part.text);
-          });
-          cursorY += lineHeight;
-          if (cursorY > pageHeight - 20) {
-            doc.addPage();
-            cursorY = marginTop;
-          }
-        });
-      });
-
-      const totalPages = doc.internal.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFontSize(10);
-        doc.setTextColor(150);
-        doc.text(`Page ${i} of ${totalPages}`, pageWidth - 30, pageHeight - 10);
-        doc.text(
-          "© 2025 Papershapers. All rights reserved.",
-          pageWidth / 2,
-          pageHeight - 10,
-          { align: "center" },
-        );
-      }
-
-      const pdfBlob = doc.output("blob");
-      const pdfUrl = URL.createObjectURL(pdfBlob);
-      setPdfUrl(pdfUrl);
-
+      // Set the generated content as markdown to be rendered
+      setMarkdownContent(content);
       toast.success("Mock paper generated successfully!");
     } catch (error) {
       setLoading(false);
       console.error("Error generating mock paper:", error);
       toast.error("Failed to generate mock paper. Please try again.");
     }
+  };
+
+  // Download the markdown content as a PDF using the helper function
+  const downloadMarkdown = () => {
+    if (!markdownContent) return;
+    const cleanString = (str: string) =>
+      str.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
+    const fileName = `MockPaper_${cleanString(formData.board)}_${cleanString(
+      formData.classLevel
+    )}_${cleanString(formData.selectedSubjects)}_${cleanString(formData.chapter)}.pdf`;
+
+    // Pass the element ID ("markdownContent") rather than markdownContent itself
+    downloadPdf("markdownContent", fileName);
   };
 
   return (
@@ -218,12 +149,12 @@ const MultiStepForm: React.FC = () => {
             <Step2Confirmation
               formData={formData}
               onGenerate={handleGenerate}
-              pdfUrl={pdfUrl}
+              markdownContent={markdownContent}
               loading={loading}
               onNext={handleNext}
+              onDownload={downloadMarkdown}
             />
           )}
-
           {step === 3 && (
             <Step3AnswerKey
               formData={formData}

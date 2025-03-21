@@ -4,15 +4,24 @@ import axios from "axios";
 export async function getResearchAnswer(query: string) {
   try {
     const payload = { query };
-
     const apiURL = import.meta.env.VITE_API_BASE_URL;
-    // Calling the researcher endpoint as specified by the curl command
+
     const response = await axios.post(`${apiURL}/default/researcher`, payload, {
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json, text/plain, */*",
+      },
+      timeout: 90000, 
     });
 
+    console.log("Response from API", response);
+
     if (response.status === 200 && response.data) {
-      return response.data;
+      const parsedBody =
+        typeof response.data.body === "string"
+          ? JSON.parse(response.data.body)
+          : response.data.body;
+      return parsedBody;
     } else {
       throw new Error("Invalid response format: Missing expected data");
     }

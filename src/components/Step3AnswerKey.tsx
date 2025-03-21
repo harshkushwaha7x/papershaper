@@ -2,11 +2,11 @@
 import { FormDataType } from "pages/MockPaperCreatorPage";
 import React, { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { generateAnswerKeyPDF } from "utils/helper";
 import { getAnswerKey } from "../services/api/getAnswerKey";
 import AnswerKeyActions from "./AnswerKeyActions";
 import LoadingSpinner from "./LoadingSpinner";
-import PDFViewer from "./PDFViewer";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface StepAnswer3KeyProps {
   formData: FormDataType;
@@ -23,11 +23,11 @@ const StepAnswer3Key: React.FC<StepAnswer3KeyProps> = ({
 }) => {
   const [answerKey, setAnswerKey] = useState("");
   const [loading, setLoading] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  // Remove pdfUrl if you're no longer using a PDF viewer
   const apiCalled = useRef(false); // Prevent multiple API calls
 
   useEffect(() => {
-    if (apiCalled.current) return; // Prevent multiple calls
+    if (apiCalled.current) return;
     apiCalled.current = true;
 
     const fetchAnswerKey = async () => {
@@ -46,8 +46,6 @@ const StepAnswer3Key: React.FC<StepAnswer3KeyProps> = ({
         });
 
         setAnswerKey(answerKeyContent);
-        const generatedPdfUrl = generateAnswerKeyPDF(answerKeyContent);
-        setPdfUrl(generatedPdfUrl);
         toast.success("Answer key loaded successfully!");
       } catch (error: any) {
         toast.error(error.message || "Failed to load answer key");
@@ -69,17 +67,44 @@ const StepAnswer3Key: React.FC<StepAnswer3KeyProps> = ({
       <div className="w-full max-w-3xl p-6 bg-white rounded-xl shadow-lg">
         {loading ? (
           <LoadingSpinner message="Generating answer key..." />
-        ) : pdfUrl ? (
-          <PDFViewer pdfUrl={pdfUrl} />
+        ) : answerKey ? (
+          <div
+            id="answerKeyContent"
+            className="prose max-w-full p-4 bg-white rounded-lg shadow-inner overflow-auto"
+          >
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h1: ({ ...props }) => (
+                  <h1 className="text-4xl font-bold my-4" {...props} />
+                ),
+                h2: ({ ...props }) => (
+                  <h2 className="text-3xl font-bold my-4" {...props} />
+                ),
+                h3: ({ ...props }) => (
+                  <h3 className="text-2xl font-bold my-3" {...props} />
+                ),
+                p: ({ ...props }) => (
+                  <p className="my-2 leading-relaxed" {...props} />
+                ),
+                li: ({ ...props }) => (
+                  <li className="list-disc ml-6 my-1" {...props} />
+                ),
+                a: ({ ...props }) => (
+                  <a className="text-blue-600 underline" {...props} />
+                ),
+              }}
+            >
+              {answerKey}
+            </ReactMarkdown>
+          </div>
         ) : (
-          <p className="text-green-700">
-            No answer key loaded. Click the button below to load the answer key.
-          </p>
+          <p className="text-green-700">No answer key available.</p>
         )}
       </div>
 
       <AnswerKeyActions
-        pdfUrl={pdfUrl}
+        pdfUrl={answerKey} // PDF download is optional; if you’re not using it, set to null.
         onBack={onBack}
         answerKeyLoaded={!!answerKey && !loading}
       />

@@ -1,20 +1,24 @@
 import { FormDataType } from "pages/MockPaperCreatorPage";
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface Step2Props {
   formData: FormDataType;
-  pdfUrl: string | null;
+  markdownContent: string;
   onGenerate: () => void;
   loading: boolean;
   onNext: () => void;
+  onDownload: () => void;
 }
 
 const Step2Confirmation: React.FC<Step2Props> = ({
   formData,
-  pdfUrl,
+  markdownContent,
   onGenerate,
   loading,
   onNext,
+  onDownload,
 }) => {
   const [messageIndex, setMessageIndex] = useState(0);
   const loadingMessages = [
@@ -36,31 +40,22 @@ const Step2Confirmation: React.FC<Step2Props> = ({
     };
   }, [loading, loadingMessages.length]);
 
-  const generateFileName = () => {
-    const cleanString = (str: string) =>
-      str.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
-    return `MockPaper_${cleanString(formData.board)}_${cleanString(
-      formData.classLevel,
-    )}_${cleanString(formData.selectedSubjects)}_${cleanString(
-      formData.chapter,
-    )}.pdf`;
-  };
-
-  const downloadPDF = () => {
-    if (pdfUrl) {
-      const link = document.createElement("a");
-      link.href = pdfUrl;
-      link.download = generateFileName();
-      link.click();
-    }
-  };
+  // const generateFileName = () => {
+  //   const cleanString = (str: string) =>
+  //     str.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
+  //   return `MockPaper_${cleanString(formData.board)}_${cleanString(
+  //     formData.classLevel
+  //   )}_${cleanString(formData.selectedSubjects)}_${cleanString(
+  //     formData.chapter
+  //   )}.pdf`;
+  // };
 
   return (
     <div className="px-4 md:px-8 pb-10 min-h-auto flex flex-col items-center justify-center">
       <h2
-        className={`text-3xl sm:text-4xl md:text-5xl font-bold text-green-600/90 py-4 ${pdfUrl ? "mb-8" : "mb-0"}`}
+        className={`text-3xl sm:text-4xl md:text-5xl font-bold text-green-600/90 py-4 ${markdownContent ? "mb-8" : "mb-0"}`}
       >
-        {pdfUrl && "Your Mock Paper is Ready!"}
+        {markdownContent && "Your Mock Paper is Ready!"}
       </h2>
 
       {loading ? (
@@ -102,7 +97,7 @@ const Step2Confirmation: React.FC<Step2Props> = ({
         </div>
       ) : (
         <div className="w-full flex flex-col gap-8">
-          {!pdfUrl && (
+          {!markdownContent && (
             <div className="w-full p-0 md:p-6">
               <h3 className="text-2xl font-semibold text-gray-800 border-b pb-3 mb-6">
                 Your Selection Summary
@@ -127,7 +122,7 @@ const Step2Confirmation: React.FC<Step2Props> = ({
                   <p className="text-gray-600 mt-1">{formData.chapter}</p>
                 </div>
               </div>
-              {!pdfUrl && (
+              {!markdownContent && (
                 <div className="mt-8 flex justify-end">
                   <button
                     onClick={onGenerate}
@@ -140,28 +135,45 @@ const Step2Confirmation: React.FC<Step2Props> = ({
               )}
             </div>
           )}
-          {pdfUrl && (
-            <div className="w-full p-0 md:p-8">
-              <h3 className="text-xl font-semibold text-gray-600 mb-6">
-                Preview Your Paper
-              </h3>
-              <div className="relative h-[60vh] lg:h-[90vh] bg-gray-100 rounded-lg overflow-hidden shadow-inner">
-                <embed
-                  src={`${pdfUrl}#toolbar=0&navpanes=0&view=FitH`}
-                  className="w-full h-full border-0"
-                  title="PDF Preview"
-                />
-                <div className="absolute inset-0 border-4 border-green-500/20 pointer-events-none rounded-lg" />
-              </div>
+          {markdownContent && (
+            <div
+              id="markdownContent"
+              className="max-w-3xl mx-auto my-8 p-6 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto max-h-[600px] prose"
+            >
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  h1: ({ ...props }) => (
+                    <h1 className="text-4xl font-bold my-4" {...props} />
+                  ),
+                  h2: ({ ...props }) => (
+                    <h2 className="text-3xl font-bold my-4" {...props} />
+                  ),
+                  h3: ({ ...props }) => (
+                    <h3 className="text-2xl font-bold my-3" {...props} />
+                  ),
+                  p: ({ ...props }) => (
+                    <p className="my-2 leading-relaxed" {...props} />
+                  ),
+                  li: ({ ...props }) => (
+                    <li className="list-disc ml-6 my-1" {...props} />
+                  ),
+                  a: ({ ...props }) => (
+                    <a className="text-blue-600 underline" {...props} />
+                  ),
+                }}
+              >
+                {markdownContent}
+              </ReactMarkdown>
             </div>
           )}
         </div>
       )}
 
-      {pdfUrl && (
+      {markdownContent && (
         <div className="flex flex-col md:flex-row justify-center gap-6 mt-12">
           <button
-            onClick={downloadPDF}
+            onClick={onDownload}
             className="w-full md:w-auto px-8 py-3 text-white rounded-lg bg-green-600 hover:bg-green-700 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg"
           >
             <svg
