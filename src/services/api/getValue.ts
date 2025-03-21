@@ -20,15 +20,13 @@ export async function getValue(formData: {
       Prompt_Type: formData.paperType,
       hit_count: formData.hit_count,
       is_logedIn: formData.is_logedIn,
+      answer: false
     };
 
     const apiURL = import.meta.env.VITE_API_BASE_URL;
-    const response = await axios.post(apiURL, payload, {
-      headers: {
-        "Content-Type": "application/json",
-      },
+    const response = await axios.post(`${apiURL}/default`, payload, {
+      headers: { "Content-Type": "application/json" },
     });
-    console.log(response, "response^^^^^^^");
     return response.data;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
@@ -36,10 +34,10 @@ export async function getValue(formData: {
       const errorMessage =
         error.response.data?.message || error.response.statusText;
       console.error(
-        `HTTP error! status: ${error.response.status}, message: ${errorMessage}`,
+        `HTTP error! status: ${error.response.status}, message: ${errorMessage}`
       );
       throw new Error(
-        `HTTP error! status: ${error.response.status}, message: ${errorMessage}`,
+        `HTTP error! status: ${error.response.status}, message: ${errorMessage}`
       );
     } else {
       console.error("Error fetching data:", error.message);

@@ -7,8 +7,8 @@ import { getValue } from "../services/api/getValue";
 import StepIndicator from "../components/StepIndicator";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import Step2Confirmation from "../components/Step2Confirmation";
-import Step1Details from "components/Step1Details";
-import StepAnswerKey from "components/StepAnswerKey";
+import Step1Details from "../components/Step1Details";
+import Step3AnswerKey from "../components/Step3AnswerKey";
 
 export interface FormDataType {
   reason?: string | undefined;
@@ -225,7 +225,7 @@ const MultiStepForm: React.FC = () => {
           )}
 
           {step === 3 && (
-            <StepAnswerKey
+            <Step3AnswerKey
               formData={formData}
               content={questions}
               onBack={handleBack}
