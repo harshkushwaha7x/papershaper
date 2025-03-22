@@ -9,6 +9,7 @@ import { getResearchAnswer } from "services/api/getResearchAnswer";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import LoadingIndicator from "./LoadingIndicator";
+import { Helmet } from "react-helmet-async";
 
 const ResearchServicePage = () => {
   const [query, setQuery] = useState("");
@@ -164,6 +165,46 @@ const ResearchServicePage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* SEO Meta Tags */}
+      <Helmet>
+        <title>Research Service - Papershapers</title>
+        <meta
+          name="description"
+          content="Get your personalized research report from Papershapers. Ask your questions and receive detailed research answers in a beautifully formatted PDF."
+        />
+        <meta
+          name="keywords"
+          content="Research, Papershapers, Research Service, personalized research report, research query"
+        />
+        <meta name="robots" content="index, follow" />
+        {/* Open Graph Meta Tags */}
+        <meta property="og:title" content="Research Service - Papershapers" />
+        <meta
+          property="og:description"
+          content="Get your personalized research report from Papershapers."
+        />
+        <meta
+          property="og:image"
+          content="https://www.papershapers.com/og-image.jpg"
+        />
+        <meta
+          property="og:url"
+          content="https://www.papershapers.com/research"
+        />
+        <meta property="og:type" content="website" />
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Research Service - Papershapers" />
+        <meta
+          name="twitter:description"
+          content="Get your personalized research report from Papershapers."
+        />
+        <meta
+          name="twitter:image"
+          content="https://www.papershapers.com/og-image.jpg"
+        />
+      </Helmet>
+
       <Header />
 
       <main className="flex-grow">

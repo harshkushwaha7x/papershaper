@@ -196,7 +196,8 @@ export const downloadPdf = async (
     return;
   }
   try {
-    // Capture the full content as a canvas
+    // Capture content as a canvas; modify cloned element styles to remove borders,
+    // radius, and adjust bullet point vertical alignment
     const canvas = await html2canvas(input, {
       scale: 2,
       scrollY: -window.scrollY,
@@ -205,53 +206,83 @@ export const downloadPdf = async (
         if (clonedElement) {
           clonedElement.style.overflow = "visible";
           clonedElement.style.maxHeight = "none";
+          // Remove borders and rounded corners
+          clonedElement.style.border = "none";
+          clonedElement.style.borderRadius = "0";
+          // Adjust bullet point styling for vertical centering
+          const ulElements = clonedElement.querySelectorAll("ul");
+          ulElements.forEach((ul) => {
+            // Ensure the bullet appears inline with the text
+            ul.style.listStylePosition = "inside";
+          });
+          const liElements = clonedElement.querySelectorAll("li");
+          liElements.forEach((li) => {
+            // Vertically center the bullet marker relative to the text line
+            li.style.verticalAlign = "middle";
+            // Optionally, you may tweak the line-height if necessary:
+            // li.style.lineHeight = "1.5";
+          });
         }
       },
     });
 
-    // Initialize jsPDF for A4 dimensions (points)
+    // Initialize jsPDF with A4 dimensions (points)
     const pdf = new jsPDF("p", "pt", "a4");
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    // Define header and footer sizes (in points)
+    // Define header and footer heights (in points)
     const headerHeight = 50;
     const footerHeight = 30;
-    const usablePageHeight = pdfHeight - headerHeight - footerHeight;
 
-    // Calculate scaling factor from canvas pixels to PDF points
-    const scaleFactor = pdfWidth / canvas.width;
-    // Determine the height (in canvas pixels) of one page slice
-    const pageSliceHeight = usablePageHeight / scaleFactor;
-    // Calculate total number of pages required
-    const totalPages = Math.ceil(canvas.height / pageSliceHeight);
+    // Define additional margins for content (to avoid text breaking)
+    const sideMargin = 20; // left/right margins
+    const verticalMargin = 10; // extra space below header and above footer
+
+    // Compute the content area boundaries
+    const contentTop = headerHeight + verticalMargin;
+    const usablePdfWidth = pdfWidth - sideMargin * 2;
+    const usablePdfHeight =
+      pdfHeight - contentTop - (footerHeight + verticalMargin);
+
+    // Calculate the scale factor for mapping canvas pixels to PDF points
+    const scaleFactor = usablePdfWidth / canvas.width;
+    // rawPageSliceHeight is the ideal slice height in canvas pixels
+    const rawPageSliceHeight = usablePdfHeight / scaleFactor;
+    // Use a sliceBuffer to reduce the slice height and avoid cutting through text
+    const sliceBuffer = 10; // adjust this value as needed
+    const pageSliceHeight = rawPageSliceHeight - sliceBuffer;
+    // Determine total pages based on the raw slice height (so that we don’t lose content)
+    const totalPages = Math.ceil(canvas.height / rawPageSliceHeight);
+
+    // Fixed font sizes for header and footer
+    const headerFontSize = 12;
+    const footerFontSize = 8;
 
     for (let page = 0; page < totalPages; page++) {
-      // Create an offscreen canvas for this page slice
+      // Create an offscreen canvas for the current page slice
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width = canvas.width;
-      // Ensure we don't exceed the remaining canvas height on the last page
-      pageCanvas.height = Math.min(
-        pageSliceHeight,
-        canvas.height - page * pageSliceHeight
-      );
+      const remainingHeight = canvas.height - page * rawPageSliceHeight;
+      const currentSliceHeight =
+        page < totalPages - 1 ? pageSliceHeight : remainingHeight;
+      pageCanvas.height = currentSliceHeight;
+
       const ctx = pageCanvas.getContext("2d");
       if (ctx) {
-        // Extract the slice of the canvas for this page
         ctx.drawImage(
           canvas,
           0,
-          page * pageSliceHeight,
+          page * rawPageSliceHeight,
           canvas.width,
-          pageCanvas.height,
+          currentSliceHeight,
           0,
           0,
           canvas.width,
-          pageCanvas.height
+          currentSliceHeight
         );
-        // Convert the page slice to an image
         const pageData = pageCanvas.toDataURL("image/png");
-        // Add a new page for pages after the first one
+
         if (page > 0) {
           pdf.addPage();
         }
@@ -260,12 +291,12 @@ export const downloadPdf = async (
         pdf.setFillColor(34, 197, 94); // Tailwind green-500
         pdf.rect(0, 0, pdfWidth, headerHeight, "F");
         pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(18);
+        pdf.setFontSize(headerFontSize);
         pdf.setTextColor(255, 255, 255);
         pdf.text(
           "Papershapers: Your Personalized Mock Paper",
           pdfWidth / 2,
-          headerHeight / 2 + 6,
+          headerHeight / 2 + headerFontSize / 2,
           { align: "center" }
         );
 
@@ -274,15 +305,15 @@ export const downloadPdf = async (
         pdf.addImage(
           pageData,
           "PNG",
-          0,
-          headerHeight,
-          pdfWidth,
-          pageCanvas.height * scaleFactor
+          sideMargin,
+          contentTop,
+          usablePdfWidth,
+          currentSliceHeight * scaleFactor
         );
 
         // --- Draw Footer ---
         pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(10);
+        pdf.setFontSize(footerFontSize);
         pdf.setTextColor(100, 100, 100);
         const pageNumber = page + 1;
         pdf.text(

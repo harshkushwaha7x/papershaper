@@ -201,7 +201,7 @@ const Step2Confirmation: React.FC<Step2Props> = ({
             onClick={onNext}
             className="w-full md:w-auto px-8 py-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-all"
           >
-            Next
+            Answer Key
           </button>
         </div>
       )}
