@@ -18,7 +18,10 @@ const ResearchServicePage = () => {
   // Track active states for the Plus and Globe buttons
   const [isGlobeActive, setIsGlobeActive] = useState(false);
 
-  const handleSearch = async () => {
+  const handleSearch = async () =>
+  {
+    setError(false);
+    // Reset the response when a new query is made
     if (!query) return;
     setLoading(true);
     try {
