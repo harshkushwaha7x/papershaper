@@ -1,46 +1,52 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import { toast } from "react-toastify";
 
 export const generateAnswerKeyPDF = (text: string): string => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const doc: any = new jsPDF();
-  const margin = 15;
-  const footerHeight = 20;
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-  const maxWidth = pageWidth - 2 * margin;
-  let yPos = margin;
 
-  // Define font sizes and spacing
-  const contentFontSize = 12;
-  const headerFontSize = 16;
-  const lineHeight = 8;
-  const lineSpacing = 2;
+  // Constants for layout and fonts
+  const MARGIN = 15;
+  const FOOTER_HEIGHT = 20;
+  const PAGE_WIDTH = doc.internal.pageSize.getWidth();
+  const PAGE_HEIGHT = doc.internal.pageSize.getHeight();
+  const MAX_WIDTH = PAGE_WIDTH - 2 * MARGIN;
 
-  // Render header only on page 1.
+  const CONTENT_FONT_SIZE = 12;
+  const HEADER_FONT_SIZE = 16;
+  const LINE_HEIGHT = 8;
+  const LINE_SPACING = 2;
+
+  let yPos = MARGIN;
+
+  // Render the header on the first page (or when a new page is added)
   const renderHeader = () => {
     if (doc.internal.getNumberOfPages() === 1) {
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(headerFontSize);
-      const headerText = "Answer Key";
-      // Center the header on the page.
-      doc.text(headerText, pageWidth / 2, margin, { align: "center" });
-      yPos = margin + 12;
-      // Reset to normal font settings for content.
+      doc.setFontSize(HEADER_FONT_SIZE);
+      doc.text("Answer Key", PAGE_WIDTH / 2, MARGIN, { align: "center" });
+      yPos = MARGIN + 12;
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(contentFontSize);
+      doc.setFontSize(CONTENT_FONT_SIZE);
     } else {
-      // For pages beyond the first, simply reset yPos.
-      yPos = margin;
+      yPos = MARGIN;
     }
   };
 
-  // Render header on the first page.
-  renderHeader();
+  // Render the footer on each page
+  const renderFooter = (pageNumber: number, totalPages: number) => {
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    const footerText = "© 2025 Papershapers all rights reserved";
+    doc.text(footerText, MARGIN, PAGE_HEIGHT - 10);
+    const pageText = `Page ${pageNumber} of ${totalPages}`;
+    doc.text(pageText, PAGE_WIDTH - MARGIN, PAGE_HEIGHT - 10, {
+      align: "right",
+    });
+  };
 
-  // Helper: Parse inline segments for bold formatting.
-  // If text is enclosed in **, mark it as bold.
+  // Parse inline segments for bold formatting (text wrapped with **)
   const parseInlineSegments = (line: string) => {
     const segments: { text: string; bold: boolean }[] = [];
     const regex = /\*\*(.*?)\*\*/g;
@@ -53,29 +59,22 @@ export const generateAnswerKeyPDF = (text: string): string => {
           bold: false,
         });
       }
-      segments.push({
-        text: match[1],
-        bold: true,
-      });
+      segments.push({ text: match[1], bold: true });
       lastIndex = match.index + match[0].length;
     }
     if (lastIndex < line.length) {
-      segments.push({
-        text: line.substring(lastIndex),
-        bold: false,
-      });
+      segments.push({ text: line.substring(lastIndex), bold: false });
     }
     return segments;
   };
 
-  // Process a line with inline bold formatting and manual word wrapping.
+  // Process a line that may contain inline bold formatting and manually wrap words
   const processFormattedLine = (line: string) => {
     const segments = parseInlineSegments(line);
-    // Break segments into individual word tokens (preserving spaces)
     const words: { text: string; bold: boolean }[] = [];
+
     segments.forEach((segment) => {
-      const tokens = segment.text.split(/(\s+)/);
-      tokens.forEach((token) => {
+      segment.text.split(/(\s+)/).forEach((token) => {
         if (token.length > 0) {
           words.push({ text: token, bold: segment.bold });
         }
@@ -86,24 +85,23 @@ export const generateAnswerKeyPDF = (text: string): string => {
     let currentLineWidth = 0;
 
     words.forEach((word) => {
-      // Set the font style for measurement.
+      // Set font for measurement based on formatting
       doc.setFont("helvetica", word.bold ? "bold" : "normal");
-      doc.setFontSize(contentFontSize);
+      doc.setFontSize(CONTENT_FONT_SIZE);
       const wordWidth = doc.getTextWidth(word.text);
       const additionalWidth =
         currentLineWords.length > 0 ? doc.getTextWidth(" ") : 0;
 
-      if (currentLineWidth + additionalWidth + wordWidth > maxWidth) {
-        // Render the current line.
-        let xPos = margin;
+      if (currentLineWidth + additionalWidth + wordWidth > MAX_WIDTH) {
+        let xPos = MARGIN;
         currentLineWords.forEach((w) => {
           doc.setFont("helvetica", w.bold ? "bold" : "normal");
-          doc.setFontSize(contentFontSize);
+          doc.setFontSize(CONTENT_FONT_SIZE);
           doc.text(w.text, xPos, yPos);
           xPos += doc.getTextWidth(w.text);
         });
-        yPos += lineHeight + lineSpacing;
-        if (yPos > pageHeight - margin - footerHeight) {
+        yPos += LINE_HEIGHT + LINE_SPACING;
+        if (yPos > PAGE_HEIGHT - MARGIN - FOOTER_HEIGHT) {
           doc.addPage();
           renderHeader();
         }
@@ -118,68 +116,65 @@ export const generateAnswerKeyPDF = (text: string): string => {
       currentLineWidth += wordWidth;
     });
 
-    // Render any remaining words on the current line.
+    // Render any remaining words on the current line
     if (currentLineWords.length > 0) {
-      let xPos = margin;
+      let xPos = MARGIN;
       currentLineWords.forEach((w) => {
         doc.setFont("helvetica", w.bold ? "bold" : "normal");
-        doc.setFontSize(contentFontSize);
+        doc.setFontSize(CONTENT_FONT_SIZE);
         doc.text(w.text, xPos, yPos);
         xPos += doc.getTextWidth(w.text);
       });
-      yPos += lineHeight + lineSpacing;
-      if (yPos > pageHeight - margin - footerHeight) {
+      yPos += LINE_HEIGHT + LINE_SPACING;
+      if (yPos > PAGE_HEIGHT - MARGIN - FOOTER_HEIGHT) {
         doc.addPage();
         renderHeader();
       }
     }
-    // Reset font settings.
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(contentFontSize);
+    doc.setFontSize(CONTENT_FONT_SIZE);
   };
 
-  // Clean and process the input text.
+  // Begin by rendering the header on the first page.
+  renderHeader();
+
+  // Clean up input text and split into individual lines.
   text = text.replace(/\uFFFD/g, "");
   const lines = text.split("\n");
 
+  // Process each line, handling blank lines, inline formatting, or standard text wrapping.
   lines.forEach((line) => {
     const cleanedLine = line.trim().replace(/\s{2,}/g, " ");
     if (cleanedLine === "") {
-      yPos += lineHeight / 1.5; // extra spacing for blank lines
+      yPos += LINE_HEIGHT / 1.5; // extra spacing for blank lines
       return;
     }
     if (cleanedLine.includes("**")) {
       processFormattedLine(cleanedLine);
     } else {
-      const splitText = doc.splitTextToSize(cleanedLine, maxWidth);
+      const splitText = doc.splitTextToSize(cleanedLine, MAX_WIDTH);
       if (
-        yPos + splitText.length * (lineHeight + lineSpacing) >
-        pageHeight - margin - footerHeight
+        yPos + splitText.length * (LINE_HEIGHT + LINE_SPACING) >
+        PAGE_HEIGHT - MARGIN - FOOTER_HEIGHT
       ) {
         doc.addPage();
         renderHeader();
       }
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(contentFontSize);
-      doc.text(splitText, margin, yPos);
-      yPos += splitText.length * (lineHeight + lineSpacing);
+      doc.setFontSize(CONTENT_FONT_SIZE);
+      doc.text(splitText, MARGIN, yPos);
+      yPos += splitText.length * (LINE_HEIGHT + LINE_SPACING);
     }
   });
 
-  // Add a footer on each page with reserved bottom margin.
-  const pageCount = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= pageCount; i++) {
+  // Render footers on all pages.
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    const footerText = "© 2025 Papershapers all rights reserved";
-    doc.text(footerText, margin, pageHeight - 10);
-    const pageText = `Page ${i} of ${pageCount}`;
-    doc.text(pageText, pageWidth - margin, pageHeight - 10, {
-      align: "right",
-    });
+    renderFooter(i, totalPages);
   }
 
+  // Generate a blob URL for the PDF output.
   const pdfBlob = doc.output("blob");
   const pdfBlobUrl = URL.createObjectURL(pdfBlob);
   return pdfBlobUrl;
@@ -196,31 +191,39 @@ export const downloadPdf = async (
     return;
   }
   try {
-    // Capture content as a canvas; modify cloned element styles to remove borders,
-    // radius, and adjust bullet point vertical alignment
+    // Force a fixed desktop width (e.g., 1024px) to bypass mobile CSS media queries
     const canvas = await html2canvas(input, {
       scale: 2,
       scrollY: -window.scrollY,
+      windowWidth: 1024, // force a desktop-like viewport width
       onclone: (clonedDoc) => {
+        // Optionally, you can still inject your custom styles if needed
+        const style = clonedDoc.createElement("style");
+        style.textContent = `
+          html, body, #${elementId} {
+            font-size: 16px !important;
+            line-height: 1.5 !important;
+          }
+          p, h1, h2, h3, h4, h5, h6, li, span {
+            font-size: 16px !important;
+          }
+        `;
+        clonedDoc.head.appendChild(style);
+
         const clonedElement = clonedDoc.getElementById(elementId);
         if (clonedElement) {
           clonedElement.style.overflow = "visible";
           clonedElement.style.maxHeight = "none";
-          // Remove borders and rounded corners
           clonedElement.style.border = "none";
           clonedElement.style.borderRadius = "0";
-          // Adjust bullet point styling for vertical centering
+
           const ulElements = clonedElement.querySelectorAll("ul");
           ulElements.forEach((ul) => {
-            // Ensure the bullet appears inline with the text
             ul.style.listStylePosition = "inside";
           });
           const liElements = clonedElement.querySelectorAll("li");
           liElements.forEach((li) => {
-            // Vertically center the bullet marker relative to the text line
             li.style.verticalAlign = "middle";
-            // Optionally, you may tweak the line-height if necessary:
-            // li.style.lineHeight = "1.5";
           });
         }
       },
@@ -231,36 +234,25 @@ export const downloadPdf = async (
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
 
-    // Define header and footer heights (in points)
     const headerHeight = 50;
     const footerHeight = 30;
-
-    // Define additional margins for content (to avoid text breaking)
-    const sideMargin = 20; // left/right margins
-    const verticalMargin = 10; // extra space below header and above footer
-
-    // Compute the content area boundaries
+    const sideMargin = 20;
+    const verticalMargin = 10;
     const contentTop = headerHeight + verticalMargin;
     const usablePdfWidth = pdfWidth - sideMargin * 2;
     const usablePdfHeight =
       pdfHeight - contentTop - (footerHeight + verticalMargin);
 
-    // Calculate the scale factor for mapping canvas pixels to PDF points
     const scaleFactor = usablePdfWidth / canvas.width;
-    // rawPageSliceHeight is the ideal slice height in canvas pixels
     const rawPageSliceHeight = usablePdfHeight / scaleFactor;
-    // Use a sliceBuffer to reduce the slice height and avoid cutting through text
-    const sliceBuffer = 10; // adjust this value as needed
+    const sliceBuffer = 10;
     const pageSliceHeight = rawPageSliceHeight - sliceBuffer;
-    // Determine total pages based on the raw slice height (so that we don’t lose content)
     const totalPages = Math.ceil(canvas.height / rawPageSliceHeight);
 
-    // Fixed font sizes for header and footer
     const headerFontSize = 12;
     const footerFontSize = 8;
 
     for (let page = 0; page < totalPages; page++) {
-      // Create an offscreen canvas for the current page slice
       const pageCanvas = document.createElement("canvas");
       pageCanvas.width = canvas.width;
       const remainingHeight = canvas.height - page * rawPageSliceHeight;
@@ -287,8 +279,8 @@ export const downloadPdf = async (
           pdf.addPage();
         }
 
-        // --- Draw Header ---
-        pdf.setFillColor(34, 197, 94); // Tailwind green-500
+        // Draw Header
+        pdf.setFillColor(34, 197, 94);
         pdf.rect(0, 0, pdfWidth, headerHeight, "F");
         pdf.setFont("helvetica", "bold");
         pdf.setFontSize(headerFontSize);
@@ -300,7 +292,7 @@ export const downloadPdf = async (
           { align: "center" }
         );
 
-        // --- Draw Content ---
+        // Draw Content
         pdf.setTextColor(0, 0, 0);
         pdf.addImage(
           pageData,
@@ -311,7 +303,7 @@ export const downloadPdf = async (
           currentSliceHeight * scaleFactor
         );
 
-        // --- Draw Footer ---
+        // Draw Footer
         pdf.setFont("helvetica", "normal");
         pdf.setFontSize(footerFontSize);
         pdf.setTextColor(100, 100, 100);
