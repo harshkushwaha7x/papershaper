@@ -1,19 +1,18 @@
 import { ArrowUpIcon, GlobeAltIcon } from "@heroicons/react/24/solid";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import ReactMarkdown from "react-markdown";
-import { toast } from "react-toastify";
 import remarkGfm from "remark-gfm";
 import { getResearchAnswer } from "services/api/getResearchAnswer";
+import { downloadPdf } from "utils/helper";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import LoadingIndicator from "./LoadingIndicator";
-import { Helmet } from "react-helmet-async";
 
 const ResearchServicePage = () => {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
   const [researchResponse, setResearchResponse] = useState("");
 
   // Track active states for the Plus and Globe buttons
@@ -28,145 +27,11 @@ const ResearchServicePage = () => {
       // we can directly extract the "response" property.
       setResearchResponse(data.response);
     } catch (error) {
+      setError(true);
+      setResearchResponse("");
       console.error("Search error:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Download PDF by capturing the markdown output
-  const downloadPdf = async () => {
-    const elementId = "markdownContent";
-    const input = document.getElementById(elementId);
-    if (!input) {
-      console.error(`Element with id '${elementId}' not found.`);
-      toast.error("PDF download error: Element not found");
-      return;
-    }
-
-    // Layout and style constants
-    const SCALE = 2;
-    const HEADER_HEIGHT = 50;
-    const FOOTER_HEIGHT = 30;
-    const PDF_NAME = "research-report.pdf";
-
-    try {
-      // Capture the element as a canvas with fixed desktop width and injected styles
-      const canvas = await html2canvas(input, {
-        scale: SCALE,
-        scrollY: -window.scrollY,
-        windowWidth: 1024, // Force desktop-like viewport width
-        onclone: (clonedDoc) => {
-          // Remove any mobile-specific viewport meta tag
-          const viewportMeta = clonedDoc.querySelector('meta[name="viewport"]');
-          if (viewportMeta) {
-            viewportMeta.remove();
-          }
-          // Inject custom styles to enforce consistent font sizes and line heights
-          const style = clonedDoc.createElement("style");
-          style.textContent = `
-          html, body, #${elementId} {
-            font-size: 16px !important;
-            line-height: 1.5 !important;
-          }
-          p, h1, h2, h3, h4, h5, h6, li, span {
-            font-size: 16px !important;
-          }
-        `;
-          clonedDoc.head.appendChild(style);
-
-          const clonedElement = clonedDoc.getElementById(elementId);
-          if (clonedElement) {
-            clonedElement.style.overflow = "visible";
-            clonedElement.style.maxHeight = "none";
-          }
-        },
-      });
-
-      // Initialize jsPDF for A4 dimensions (points)
-      const pdf = new jsPDF("p", "pt", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const usablePageHeight = pdfHeight - HEADER_HEIGHT - FOOTER_HEIGHT;
-
-      // Calculate scale factor and slice height in canvas pixels
-      const scaleFactor = pdfWidth / canvas.width;
-      const pageSliceHeight = usablePageHeight / scaleFactor;
-      const totalPages = Math.ceil(canvas.height / pageSliceHeight);
-
-      // Helper: Render Header
-      const renderHeader = () => {
-        pdf.setFillColor(34, 197, 94); // Tailwind green-500
-        pdf.rect(0, 0, pdfWidth, HEADER_HEIGHT, "F");
-        pdf.setFont("helvetica", "bold");
-        pdf.setFontSize(18);
-        pdf.setTextColor(255, 255, 255);
-        pdf.text("Research Report", pdfWidth / 2, HEADER_HEIGHT / 2 + 6, {
-          align: "center",
-        });
-      };
-
-      // Helper: Render Footer
-      const renderFooter = (pageNumber: number, totalPages: number) => {
-        pdf.setFont("helvetica", "normal");
-        pdf.setFontSize(10);
-        pdf.setTextColor(100, 100, 100);
-        pdf.text(
-          `© 2025 Papershapers. All rights reserved. | Page ${pageNumber} of ${totalPages}`,
-          pdfWidth / 2,
-          pdfHeight - 10,
-          { align: "center" }
-        );
-      };
-
-      // Loop through each page slice of the canvas
-      for (let page = 0; page < totalPages; page++) {
-        if (page > 0) {
-          pdf.addPage();
-        }
-        renderHeader();
-
-        // Create an offscreen canvas for the current page slice
-        const pageCanvas = document.createElement("canvas");
-        pageCanvas.width = canvas.width;
-        pageCanvas.height = Math.min(
-          pageSliceHeight,
-          canvas.height - page * pageSliceHeight
-        );
-        const ctx = pageCanvas.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(
-            canvas,
-            0,
-            page * pageSliceHeight,
-            canvas.width,
-            pageCanvas.height,
-            0,
-            0,
-            canvas.width,
-            pageCanvas.height
-          );
-          const pageData = pageCanvas.toDataURL("image/png");
-
-          // Draw the content image starting below the header
-          pdf.addImage(
-            pageData,
-            "PNG",
-            0,
-            HEADER_HEIGHT,
-            pdfWidth,
-            pageCanvas.height * scaleFactor
-          );
-
-          renderFooter(page + 1, totalPages);
-        }
-      }
-
-      pdf.save(PDF_NAME);
-      toast.success("PDF saved successfully.");
-    } catch (err) {
-      console.error("Error generating PDF:", err);
-      toast.error("Failed to generate PDF");
     }
   };
 
@@ -230,64 +95,63 @@ const ResearchServicePage = () => {
             What do you need assistance with?
           </h1>
 
-          <div className="w-full max-w-2xl">
+          <div className="w-full max-w-2xl space-y-4">
+            {/* Textarea Container */}
             <div className="relative">
-              <div className="relative group">
-                <input
-                  id="query"
-                  type="text"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      handleSearch();
-                    }
-                  }}
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  className="w-full h-40 border border-green-400 rounded-xl px-6 pt-5 pb-12 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200 text-lg"
-                />
-                <label
-                  htmlFor="query"
-                  className={`absolute left-6 transition-all duration-200 ease-in-out pointer-events-none text-gray-500 ${
-                    query
-                      ? "text-sm top-4"
-                      : "top-3 group-focus-within:text-xs group-focus-within:top-1"
-                  }`}
-                >
-                  Enter your research query
-                </label>
-              </div>
+              <textarea
+                id="query"
+                placeholder="Ask anything"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  // Reset the height so that we can correctly read the scrollHeight
+                  e.target.style.height = "auto";
+                  // Define maximum height (for example, 4 lines)
+                  const maxHeight = 96; // adjust this value based on your line-height (e.g. 4 lines)
+                  // Set the new height to the lesser of the scrollHeight or maxHeight
+                  e.target.style.height =
+                    Math.min(e.target.scrollHeight, maxHeight) + "px";
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    handleSearch();
+                  }
+                }}
+                className="w-full border border-green-400 rounded-xl px-6 pt-5 pb-3 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 transition duration-200 text-lg resize-none"
+                style={{ minHeight: "40px", maxHeight: "96px" }}
+              />
+            </div>
 
-              {/* Buttons container */}
-              <div className="absolute inset-x-0 bottom-4 flex items-center justify-between px-5">
-                <div className="flex space-x-3">
-                  <button
-                    type="button"
-                    onClick={toggleGlobe}
-                    className={`flex items-center space-x-1 p-2 rounded-full border-2 transition transform hover:scale-105 ${
-                      isGlobeActive
-                        ? "bg-green-600 text-white border-green-600"
-                        : "bg-white text-green-600 border-green-600 hover:bg-green-50"
-                    }`}
-                    title="Toggle Globe Feature"
-                  >
-                    <GlobeAltIcon className="w-6 h-6" />
-                    <span className="hidden sm:inline-block font-medium">
-                      Search
-                    </span>
-                  </button>
-                </div>
-
+            {/* Buttons Container */}
+            <div className="flex items-center justify-between px-5">
+              <div className="flex space-x-3">
                 <button
-                  onClick={handleSearch}
-                  disabled={!query || loading}
-                  className={`p-3 rounded-full bg-green-600 text-white transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 ${
-                    (!query || loading) && "opacity-50 cursor-not-allowed"
+                  type="button"
+                  onClick={toggleGlobe}
+                  className={`flex items-center space-x-1 p-2 rounded-full border-2 transition transform hover:scale-105 ${
+                    isGlobeActive
+                      ? "bg-green-600 text-white border-green-600"
+                      : "bg-white text-green-600 border-green-600 hover:bg-green-50"
                   }`}
-                  title="Search"
+                  title="Toggle Globe Feature"
                 >
-                  <ArrowUpIcon className="w-6 h-6" />
+                  <GlobeAltIcon className="w-6 h-6" />
+                  <span className="hidden sm:inline-block font-medium">
+                    Search
+                  </span>
                 </button>
               </div>
+
+              <button
+                onClick={handleSearch}
+                disabled={!query || loading}
+                className={`p-3 rounded-full bg-green-600 text-white transition transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                  (!query || loading) && "opacity-50 cursor-not-allowed"
+                }`}
+                title="Search"
+              >
+                <ArrowUpIcon className="w-6 h-6" />
+              </button>
             </div>
           </div>
         </section>
@@ -330,7 +194,9 @@ const ResearchServicePage = () => {
         {researchResponse && (
           <div className="text-center my-6 space-x-4">
             <button
-              onClick={downloadPdf}
+              onClick={() =>
+                downloadPdf("markdownContent", "research-report.pdf")
+              }
               className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               Download PDF
@@ -343,6 +209,26 @@ const ResearchServicePage = () => {
               className="px-6 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-300"
             >
               Try Another Query
+            </button>
+          </div>
+        )}
+
+        {error && (
+          <div className="mx-auto max-w-md p-6 flex flex-col items-center space-y-4">
+            <p className="text-center text-lg font-semibold text-red-700">
+              Some error occurred while generating the report. Please try again.
+            </p>
+            <button
+              onClick={ () =>
+              {
+                setError(false);
+                setResearchResponse("");
+                // setQuery("");
+                handleSearch();
+              }}
+              className="w-fit px-8 py-3 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-colors focus:outline-none focus:ring-2 focus:ring-red-400"
+            >
+              Retry
             </button>
           </div>
         )}
