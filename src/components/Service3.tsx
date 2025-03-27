@@ -36,19 +36,46 @@ const ResearchServicePage = () => {
 
   // Download PDF by capturing the markdown output
   const downloadPdf = async () => {
-    const input = document.getElementById("markdownContent");
+    const elementId = "markdownContent";
+    const input = document.getElementById(elementId);
     if (!input) {
-      console.error("Element with id 'markdownContent' not found.");
+      console.error(`Element with id '${elementId}' not found.`);
       toast.error("PDF download error: Element not found");
       return;
     }
+
+    // Layout and style constants
+    const SCALE = 2;
+    const HEADER_HEIGHT = 50;
+    const FOOTER_HEIGHT = 30;
+    const PDF_NAME = "research-report.pdf";
+
     try {
-      // Capture the full content as a canvas
+      // Capture the element as a canvas with fixed desktop width and injected styles
       const canvas = await html2canvas(input, {
-        scale: 2,
+        scale: SCALE,
         scrollY: -window.scrollY,
+        windowWidth: 1024, // Force desktop-like viewport width
         onclone: (clonedDoc) => {
-          const clonedElement = clonedDoc.getElementById("markdownContent");
+          // Remove any mobile-specific viewport meta tag
+          const viewportMeta = clonedDoc.querySelector('meta[name="viewport"]');
+          if (viewportMeta) {
+            viewportMeta.remove();
+          }
+          // Inject custom styles to enforce consistent font sizes and line heights
+          const style = clonedDoc.createElement("style");
+          style.textContent = `
+          html, body, #${elementId} {
+            font-size: 16px !important;
+            line-height: 1.5 !important;
+          }
+          p, h1, h2, h3, h4, h5, h6, li, span {
+            font-size: 16px !important;
+          }
+        `;
+          clonedDoc.head.appendChild(style);
+
+          const clonedElement = clonedDoc.getElementById(elementId);
           if (clonedElement) {
             clonedElement.style.overflow = "visible";
             clonedElement.style.maxHeight = "none";
@@ -60,31 +87,54 @@ const ResearchServicePage = () => {
       const pdf = new jsPDF("p", "pt", "a4");
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
+      const usablePageHeight = pdfHeight - HEADER_HEIGHT - FOOTER_HEIGHT;
 
-      // Define header and footer sizes (in points)
-      const headerHeight = 50;
-      const footerHeight = 30;
-      const usablePageHeight = pdfHeight - headerHeight - footerHeight;
-
-      // Calculate scaling factor from canvas pixels to PDF points
+      // Calculate scale factor and slice height in canvas pixels
       const scaleFactor = pdfWidth / canvas.width;
-      // Determine the height (in canvas pixels) of one page slice
       const pageSliceHeight = usablePageHeight / scaleFactor;
-      // Calculate total number of pages required
       const totalPages = Math.ceil(canvas.height / pageSliceHeight);
 
+      // Helper: Render Header
+      const renderHeader = () => {
+        pdf.setFillColor(34, 197, 94); // Tailwind green-500
+        pdf.rect(0, 0, pdfWidth, HEADER_HEIGHT, "F");
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(18);
+        pdf.setTextColor(255, 255, 255);
+        pdf.text("Research Report", pdfWidth / 2, HEADER_HEIGHT / 2 + 6, {
+          align: "center",
+        });
+      };
+
+      // Helper: Render Footer
+      const renderFooter = (pageNumber: number, totalPages: number) => {
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(10);
+        pdf.setTextColor(100, 100, 100);
+        pdf.text(
+          `© 2025 Papershapers. All rights reserved. | Page ${pageNumber} of ${totalPages}`,
+          pdfWidth / 2,
+          pdfHeight - 10,
+          { align: "center" }
+        );
+      };
+
+      // Loop through each page slice of the canvas
       for (let page = 0; page < totalPages; page++) {
-        // Create an offscreen canvas for this page slice
+        if (page > 0) {
+          pdf.addPage();
+        }
+        renderHeader();
+
+        // Create an offscreen canvas for the current page slice
         const pageCanvas = document.createElement("canvas");
         pageCanvas.width = canvas.width;
-        // Ensure we don't exceed the remaining canvas height on the last page
         pageCanvas.height = Math.min(
           pageSliceHeight,
           canvas.height - page * pageSliceHeight
         );
         const ctx = pageCanvas.getContext("2d");
         if (ctx) {
-          // Extract the slice of the canvas for this page
           ctx.drawImage(
             canvas,
             0,
@@ -96,56 +146,23 @@ const ResearchServicePage = () => {
             canvas.width,
             pageCanvas.height
           );
-          // Convert the page slice to an image
           const pageData = pageCanvas.toDataURL("image/png");
-          // Add a new page for pages after the first one
-          if (page > 0) {
-            pdf.addPage();
-          }
 
-          // --- Draw Header ---
-          // Draw a filled rectangle as the header background
-          pdf.setFillColor(34, 197, 94); // Tailwind green-500
-          pdf.rect(0, 0, pdfWidth, headerHeight, "F");
-
-          // Set header text styles: bold, white
-          pdf.setFont("helvetica", "bold");
-          pdf.setFontSize(18);
-          pdf.setTextColor(255, 255, 255);
-          // Center the header text vertically and horizontally within the header area
-          pdf.text("Research Report", pdfWidth / 2, headerHeight / 2 + 6, {
-            align: "center",
-          });
-
-          // --- Draw Content ---
-          // Reset text color for content if needed
-          pdf.setTextColor(0, 0, 0);
+          // Draw the content image starting below the header
           pdf.addImage(
             pageData,
             "PNG",
             0,
-            headerHeight,
+            HEADER_HEIGHT,
             pdfWidth,
             pageCanvas.height * scaleFactor
           );
 
-          // --- Draw Footer ---
-          pdf.setFont("helvetica", "normal");
-          pdf.setFontSize(10);
-          pdf.setTextColor(100, 100, 100);
-          const pageNumber = page + 1;
-          pdf.text(
-            `© 2025 Papershapers. All rights reserved. | Page ${pageNumber} of ${totalPages}`,
-            pdfWidth / 2,
-            pdfHeight - 10,
-            { align: "center" }
-          );
+          renderFooter(page + 1, totalPages);
         }
       }
 
-      // Use a semantic name for the PDF file
-      const semanticName = "research-report.pdf";
-      pdf.save(semanticName);
+      pdf.save(PDF_NAME);
       toast.success("PDF saved successfully.");
     } catch (err) {
       console.error("Error generating PDF:", err);
@@ -280,7 +297,7 @@ const ResearchServicePage = () => {
         {researchResponse && (
           <div
             id="markdownContent"
-            className="max-w-3xl mx-auto my-8 p-6 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto max-h-[600px] prose"
+            className="max-w-3xl mx-4 sm:mx-auto my-8 p-6 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto max-h-[600px] prose"
           >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}

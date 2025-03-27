@@ -70,7 +70,7 @@ const StepAnswer3Key: React.FC<StepAnswer3KeyProps> = ({
         ) : answerKey ? (
           <div
             id="answerKeyContent"
-            className="prose max-w-full p-4 bg-white rounded-lg shadow-inner overflow-auto"
+            className="max-w-3xl mx-4 sm:mx-auto my-8 p-6 bg-white border border-gray-200 rounded-lg shadow-lg overflow-y-auto max-h-[600px] prose"
           >
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
