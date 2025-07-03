@@ -1,25 +1,62 @@
 name: DevOps-GitHubActions
 
-on: push
+on:
+  push:
+    branches:
+      - deployment
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
-  # Build Job
   build:
     runs-on: ubuntu-latest
+    outputs:
+      build_artifacts: ${{ steps.build.outputs.dir }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 1 # Fetch only the latest commit
+          fetch-depth: 1
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18.x
-          cache: "npm" # Cache dependencies
+          cache: npm
 
       - name: Install Dependencies
         run: npm install --force --verbose
 
       - name: Build Project
-        run: npm run build
+        id: build
+        run: |
+          npm run build
+          echo "::set-output name=dir::./.vercel/output"
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/deployment'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Pull Vercel Environment
+        env:
+          VERCEL_TOKEN: 8q36BpqAxAOPXTcyVrJGsPJv
+        run: |
+          vercel pull --yes \
+            --environment $([[ "${{ github.ref }}" == "refs/heads/deployment" ]] && echo production || echo preview) \
+            --token $VERCEL_TOKEN
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: 8q36BpqAxAOPXTcyVrJGsPJv
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/deployment" ]]; then
+            vercel deploy --prebuilt --prod --token $VERCEL_TOKEN
+          else
+            vercel deploy --prebuilt --token $VERCEL_TOKEN
+          fi
