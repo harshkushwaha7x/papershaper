@@ -24,7 +24,7 @@ export async function getValue(formData: {
     };
 
     const apiURL = import.meta.env.VITE_API_BASE_URL;
-    const response = await axios.post(`${apiURL}/default`, payload, {
+    const response = await axios.post(`${apiURL}`, payload, {
       headers: { "Content-Type": "application/json" },
     });
     return response.data;
