@@ -2,8 +2,8 @@
 
 import Header from "../components/Header";
 import Footer from "../components/Footer";
-// import ankitImage from '../assets/images/photo_ankit.png';
-// import anjaliImage from '../assets/images/photo_anjali.jpeg';
+import ankitImage from '../assets/images/photo_ankit.png';
+import anjaliImage from '../assets/images/photo_anjali.jpeg';
 import chetnaImage from "../assets/images/chetna_kumar.jpeg";
 // import yashImage from '../assets/images/photo_yash.jpeg';
 import harshImage from "../assets/images/photo_harsh.jpeg";
@@ -100,7 +100,7 @@ const AboutPage = () => {
                         </div> */}
 
             {/* Ankit Varshney - Frontend */}
-            {/* <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 w-full max-w-xs">
+            <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 w-full max-w-xs">
                             <img
                                 src={ankitImage}
                                 alt="Ankit Varshney"
@@ -126,7 +126,7 @@ const AboutPage = () => {
                                     <LinkedinIcon className="w-5 h-5" />
                                 </a>
                             </div>
-                        </div> */}
+                        </div>
 
             {/* Chetna Kumar - Backend */}
             <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 w-full max-w-xs">
@@ -158,7 +158,7 @@ const AboutPage = () => {
             </div>
 
             {/* Anjali Maddheshiya - Frontend */}
-            {/* <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 w-full max-w-xs">
+            <div className="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 w-full max-w-xs">
                             <img
                                 src={anjaliImage}
                                 alt="Anjali Maddheshiya"
@@ -184,7 +184,7 @@ const AboutPage = () => {
                                     <LinkedinIcon className="w-5 h-5" />
                                 </a>
                             </div>
-                        </div> */}
+                        </div>
           </div>
         </div>
       </section>
